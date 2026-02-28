@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# mfaisalghozi.id
 
-## Getting Started
+Personal website built with Next.js (App Router) with three pages:
 
-First, run the development server:
+- Landing page (`/`)
+- Blog list page (`/blog`) powered by Notion CMS
+- Project showcase page (`/projects`)
+
+## Stack
+
+- Next.js 16
+- React 19
+- Tailwind CSS 4
+- Notion API as CMS for blog list
+
+## Local development
+
+1. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Copy env variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Add your Notion credentials in `.env.local`:
 
-## Learn More
+```bash
+NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxxx
+NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open `http://localhost:3000`.
 
-## Deploy on Vercel
+## Notion database notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Share the Notion database with your internal integration.
+- The blog list parser reads common property types:
+  - `title` for post title
+  - first `rich_text` property for summary
+  - first `date` property for publish date
+  - first `url` property for custom external URL (optional)
+- If Notion env variables are not set, the blog page shows sample fallback posts.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Domain
+
+Set your production domain to `mfaisalghozi.id` in your hosting provider (for example, Vercel project domain settings).

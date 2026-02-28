@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f4f6f8;
+  --surface: #e8edf2;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #4c596c;
+  --line: #ccd5e1;
+  --accent: #0f766e;
+}
+
+html[data-theme="dark"] {
+  --bg: #0b1118;
+  --surface: #121c27;
+  --card: #101722;
+  --text: #e5edf7;
+  --muted: #94a3b8;
+  --line: #243145;
+  --accent: #22c1a4;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--line);
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 42%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 40%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.hero-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-wrap::before,
+.hero-wrap::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(40px);
+}
+
+.hero-wrap::before {
+  top: 64px;
+  right: -90px;
+  height: 280px;
+  width: 280px;
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.hero-wrap::after {
+  left: -100px;
+  bottom: -40px;
+  height: 300px;
+  width: 300px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: #f8fffe;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background: var(--surface);
 }

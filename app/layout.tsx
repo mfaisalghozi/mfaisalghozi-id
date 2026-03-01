@@ -32,6 +32,9 @@ export default function RootLayout({
         <div className="app-shell">
           <SiteHeader />
           <main>{children}</main>
+          <footer className="border-t border-[color:var(--line)] py-6 text-center text-sm text-[color:var(--muted)]">
+            © 2026 All rights reserved.
+          </footer>
         </div>
       </body>
     </html>

@@ -54,11 +54,10 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-[color:var(--line)] px-4 text-sm font-medium text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface)]"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--line)] text-base text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface)]"
       aria-label="Toggle theme"
     >
-      <span>{theme === "dark" ? "Dark" : "Light"}</span>
-      <span className="text-base">{theme === "dark" ? "☾" : "☀"}</span>
+      {theme === "dark" ? "☾" : "☀"}
     </button>
   );
 }

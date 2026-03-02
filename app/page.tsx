@@ -215,7 +215,7 @@ export default function HomePage() {
             <LinkedinIcon />
           </a>
           <a
-            href="mailto:hello@mfaisalghozi.id"
+            href="mailto:mfaisalghozi99@gmail.com"
             className="transition-colors hover:text-[color:var(--text)]"
           >
             <MailIcon />

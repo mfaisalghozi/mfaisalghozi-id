@@ -188,15 +188,6 @@ export default async function ProjectDetailPage({
         </section>
       )}
 
-      <div className="mt-16 border-t border-[color:var(--line)] pt-8">
-        <Link
-          href="/projects"
-          className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
-        >
-          <ArrowLeftIcon />
-          Back to projects
-        </Link>
-      </div>
     </article>
   );
 }

@@ -178,10 +178,10 @@ function MailIcon() {
 
 export default function HomePage() {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-12">
       {/* Hero */}
       <section className="mb-16">
-        <h1 className="text-3xl font-bold text-[color:var(--text)]">Muhammad Faisal Ghozi</h1>
+        <h1 className="text-2xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>
         <p className="mt-1 text-sm text-[color:var(--muted)]">Full-stack Engineer & Builder</p>
         <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
           I design and build digital products with a clear focus on speed, usability, and measurable
@@ -271,7 +271,7 @@ export default function HomePage() {
             View all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
           {featuredProjects.map((project) => (
             <div
               key={project.name}

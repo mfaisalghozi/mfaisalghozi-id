@@ -49,7 +49,7 @@ export default async function BlogPage() {
   const posts = await getBlogPosts();
 
   return (
-    <section className="mx-auto w-full max-w-2xl px-6 py-10">
+    <section className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
@@ -58,7 +58,7 @@ export default async function BlogPage() {
         Back to home
       </Link>
 
-      <h1 className="mt-6 text-4xl font-bold text-[color:var(--text)]">Blog</h1>
+      <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">Blog</h1>
       <p className="mt-2 text-[color:var(--muted)]">
         Thoughts on engineering, design systems, and building products with clarity.
       </p>
@@ -77,7 +77,7 @@ export default async function BlogPage() {
                 </span>
                 <span>{post.readTime}</span>
               </div>
-              <h2 className="mt-2 text-xl font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)]">
+              <h2 className="mt-2 text-lg font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)] sm:text-xl">
                 {post.title}
               </h2>
               <p className="mt-1.5 text-sm leading-relaxed text-[color:var(--muted)]">

@@ -107,7 +107,7 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl px-6 py-10">
+    <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/projects"
         className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
@@ -118,7 +118,7 @@ export default async function ProjectDetailPage({
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-4xl font-bold text-[color:var(--text)]">{project.name}</h1>
+          <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-4xl">{project.name}</h1>
           <span
             className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[project.status] ?? statusColors["Archived"]}`}
           >
@@ -161,13 +161,13 @@ export default async function ProjectDetailPage({
       {(project.githubUrl || project.liveUrl) && (
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-[color:var(--text)]">Links</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {project.githubUrl && (
               <a
                 href={project.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--line)] bg-[color:var(--card)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition-colors hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[color:var(--line)] bg-[color:var(--card)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition-colors hover:border-[color:var(--accent)] hover:text-[color:var(--accent)] sm:w-auto sm:justify-start sm:py-2"
               >
                 <GithubIcon />
                 View on GitHub
@@ -178,7 +178,7 @@ export default async function ProjectDetailPage({
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 sm:w-auto sm:justify-start sm:py-2"
               >
                 <ExternalLinkIcon />
                 Live Demo

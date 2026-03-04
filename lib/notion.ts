@@ -154,6 +154,24 @@ const SAMPLE_POSTS: BlogPost[] = [
     publishedAt: "2026-01-28",
     readTime: "5 min read",
   },
+  {
+    id: "sample-4",
+    title: "From Idea to Deployment: My Full-Stack Workflow",
+    slug: "from-idea-to-deployment-my-full-stack-workflow",
+    summary:
+      "A walkthrough of the tools, habits, and decisions that take a project from a rough idea to a live product.",
+    publishedAt: "2025-10-03",
+    readTime: "7 min read",
+  },
+  {
+    id: "sample-5",
+    title: "Why I Choose Boring Technology",
+    slug: "why-i-choose-boring-technology",
+    summary:
+      "Stability, community, and predictability matter more than novelty when you're shipping real products.",
+    publishedAt: "2025-09-15",
+    readTime: "4 min read",
+  },
 ];
 
 const SAMPLE_BLOCKS: Record<string, NotionBlock[]> = {
@@ -389,6 +407,177 @@ const SAMPLE_BLOCKS: Record<string, NotionBlock[]> = {
           {
             plain_text:
               "Remember: minimalism is a journey, not a destination. Keep refining, keep simplifying, and always put the user first.",
+          },
+        ],
+      },
+    },
+  ],
+  "sample-4": [
+    {
+      id: "b4-1",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Every project starts as a vague idea. The gap between that idea and a deployed product is where most developers struggle. Here's the workflow I've refined over the years to close that gap consistently.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-2",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "1. Define the Problem First" }] },
+    },
+    {
+      id: "b4-3",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Before writing a single line of code, I write a one-paragraph problem statement. Who has this problem? How are they solving it today? What does success look like? This single habit eliminates entire categories of wasted work.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-4",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "2. Sketch, Don't Design" }] },
+    },
+    {
+      id: "b4-5",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I spend 20 minutes with a pen and paper before opening Figma or a code editor. Low-fidelity sketches are fast to throw away and help me think through flow before committing to implementation details.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-6",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "3. Pick Your Stack and Commit" }] },
+    },
+    {
+      id: "b4-7",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Tech paralysis kills projects. I default to Next.js + Tailwind + Postgres for anything web-based. Boring, reliable, and fast to ship. The stack should be invisible — the product is what matters.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-8",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "4. Deploy Early, Deploy Often" }] },
+    },
+    {
+      id: "b4-9",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I push to production on day one — even if it's just a landing page. Real deployment surfaces real problems. CI/CD via GitHub Actions + Vercel means shipping is a git push, not an event.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-10",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "The goal is a tight loop: idea → code → deploy → feedback → repeat. The faster that loop spins, the better the product becomes.",
+          },
+        ],
+      },
+    },
+  ],
+  "sample-5": [
+    {
+      id: "b5-1",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Every year, the JavaScript ecosystem produces a wave of new frameworks, runtimes, and paradigms. And every year, I resist the urge to adopt most of them. Here's why I keep choosing boring technology — and why I think you should too.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-2",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "Boring Means Proven" }] },
+    },
+    {
+      id: "b5-3",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "When a technology has been around for 5+ years, you're not a beta tester. The rough edges have been filed down. The footguns are documented. The Stack Overflow answers exist. You spend your time building, not debugging the tool itself.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-4",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "Boring Means Hireable" }] },
+    },
+    {
+      id: "b5-5",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "If you're building a team or handing off a project, boring technology means a larger talent pool. React, PostgreSQL, and Node.js developers are everywhere. Developers for that new compile-to-WASM framework you adopted last month are not.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-6",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "When to Choose Exciting Technology" }] },
+    },
+    {
+      id: "b5-7",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I'm not a Luddite. I adopt new tools when they solve a real problem I currently have, not a hypothetical one. The bar is simple: does this make my product better for users, or my team faster? If yes, evaluate it seriously. If no, defer.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-8",
+      type: "quote",
+      quote: {
+        rich_text: [
+          {
+            plain_text:
+              "Choose boring technology by default. Reserve innovation tokens for the parts of your product that are genuinely novel.",
           },
         ],
       },

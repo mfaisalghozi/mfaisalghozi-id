@@ -25,6 +25,22 @@ const recentPosts = [
     readTime: "5 min read",
     href: "/blog/designing-for-clarity-in-personal-branding-websites",
   },
+  {
+    title: "From Idea to Deployment: My Full-Stack Workflow",
+    description:
+      "A walkthrough of the tools, habits, and decisions that take a project from a rough idea to a live product.",
+    date: "Oct 3, 2025",
+    readTime: "7 min read",
+    href: "/blog/from-idea-to-deployment-my-full-stack-workflow",
+  },
+  {
+    title: "Why I Choose Boring Technology",
+    description:
+      "Stability, community, and predictability matter more than novelty when you're shipping real products.",
+    date: "Sep 15, 2025",
+    readTime: "4 min read",
+    href: "/blog/why-i-choose-boring-technology",
+  },
 ];
 
 const featuredProjects = [

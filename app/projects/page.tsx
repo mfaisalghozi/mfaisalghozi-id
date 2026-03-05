@@ -74,7 +74,7 @@ export default async function ProjectsPage() {
         Back to home
       </Link>
 
-      <h1 className="mt-6 text-4xl font-bold text-[color:var(--text)]">All Projects</h1>
+      <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">All Projects</h1>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {projects.map((project) => (

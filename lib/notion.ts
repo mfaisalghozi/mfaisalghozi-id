@@ -110,9 +110,9 @@ function getPropertyByType<T extends NotionProperty["type"]>(
   return match as Extract<NotionProperty, { type: T }> | undefined;
 }
 
-function estimateReadTime(text: string): string {
+export function estimateReadTime(text: string, offset = 0): string {
   const words = text.split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.round(words / 200));
+  const minutes = Math.max(1, Math.round(words / 200)) + offset;
   return `${minutes} min read`;
 }
 
@@ -639,6 +639,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
   return payload.results
     .map(normalizePost)
+    .filter((post) => !!post.publishedAt)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getBlogPosts, formatDate } from "@/lib/notion";
+import { getBlogPosts, formatDate, estimateReadTime } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
 
 function CalendarIcon() {
@@ -97,14 +97,15 @@ function MailIcon() {
 }
 
 export default async function HomePage() {
-  const [recentPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
-  const featuredProjects = allProjects.slice(0, 4);
+  const [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  const recentPosts = allPosts.slice(0, 5);
+  const featuredProjects = allProjects.slice(0, 6);
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
       {/* Hero */}
-      <section className="mb-16">
-        <h1 className="text-3xl font-bold text-[color:var(--text)]">Muhammad Faisal Ghozi</h1>
-        <p className="mt-1 text-sm text-[color:var(--muted)]">Full-stack Engineer & Builder</p>
+      <section className="mb-10 sm:mb-16">
+        <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>
+        <p className="mt-1 text-sm text-[color:var(--muted)]">Software Engineer, Builder, Thinker</p>
         <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
           I design and build digital products with a clear focus on speed, usability, and measurable
           impact. Passionate about clean code, good design, and tools that make life easier.
@@ -146,7 +147,7 @@ export default async function HomePage() {
       </section>
 
       {/* Recent Posts */}
-      <section className="mb-16">
+      <section className="mb-10 sm:mb-16">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[color:var(--text)]">Recent Posts</h2>
           <Link
@@ -175,7 +176,7 @@ export default async function HomePage() {
                   <CalendarIcon />
                   {formatDate(post.publishedAt)}
                 </span>
-                <span>{post.readTime}</span>
+                <span>~{estimateReadTime(`${post.title} ${post.summary}`, 5)}</span>
               </div>
             </article>
           ))}
@@ -193,7 +194,7 @@ export default async function HomePage() {
             View all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {featuredProjects.map((project) => (
             <div
               key={project.slug}

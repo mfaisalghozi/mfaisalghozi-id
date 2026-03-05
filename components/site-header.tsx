@@ -41,7 +41,7 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <nav className="relative flex items-center gap-1 rounded-full border border-[color:var(--line)] p-1">
+          <nav className="relative hidden sm:flex items-center gap-1 rounded-full border border-[color:var(--line)] p-1">
             {pillStyle && (
               <motion.span
                 className="absolute inset-y-1 rounded-full"

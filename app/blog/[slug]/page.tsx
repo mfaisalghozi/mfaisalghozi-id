@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
+  estimateReadTime,
   formatDate,
   getPostBySlug,
   getPostBlocks,
@@ -246,8 +247,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const blocks = await getPostBlocks(post.id);
 
+  const blocksText = blocks
+    .flatMap((b) => {
+      const richText =
+        b.paragraph?.rich_text ??
+        b.heading_1?.rich_text ??
+        b.heading_2?.rich_text ??
+        b.heading_3?.rich_text ??
+        b.bulleted_list_item?.rich_text ??
+        b.numbered_list_item?.rich_text ??
+        b.quote?.rich_text ??
+        b.code?.rich_text ??
+        [];
+      return richText.map((t) => t.plain_text);
+    })
+    .join(" ");
+  const readTime = estimateReadTime(blocksText);
+
   return (
-    <article className="mx-auto max-w-2xl px-6 py-10">
+    <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/blog"
         className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
@@ -256,7 +274,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         Back to all posts
       </Link>
 
-      <h1 className="mt-8 text-4xl font-bold leading-tight text-[color:var(--text)]">
+      <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}
       </h1>
 
@@ -265,7 +283,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <CalendarIcon />
           {formatDate(post.publishedAt)}
         </span>
-        <span>{post.readTime}</span>
+        <span>{readTime}</span>
       </div>
 
       <div className="mt-8">{groupListItems(blocks)}</div>

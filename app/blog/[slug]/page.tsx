@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
+  estimateReadTime,
   formatDate,
   getPostBySlug,
   getPostBlocks,
@@ -9,14 +11,14 @@ import {
   type NotionRichTextItem,
 } from "@/lib/notion";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
   return {
-    title: `${post.title} | Muhammad Faisal Ghozi`,
+    title: `${post.title} | mfaisalghozi`,
     description: post.summary,
   };
 }
@@ -124,6 +126,34 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
     case "divider":
       return <hr className="my-8 border-[color:var(--line)]" />;
 
+    case "image": {
+      const src =
+        block.image?.type === "file"
+          ? block.image.file?.url
+          : block.image?.external?.url;
+      if (!src) return null;
+      const caption = block.image?.caption?.map((t) => t.plain_text).join("") ?? "";
+      return (
+        <figure className="mt-8">
+          <div className="relative w-full overflow-hidden rounded-xl">
+            <Image
+              src={src}
+              alt={caption || "Blog image"}
+              width={800}
+              height={450}
+              className="w-full object-cover"
+              unoptimized
+            />
+          </div>
+          {caption && (
+            <figcaption className="mt-2 text-center text-xs text-[color:var(--muted)]">
+              {caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
+
     default:
       return null;
   }
@@ -217,8 +247,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const blocks = await getPostBlocks(post.id);
 
+  const blocksText = blocks
+    .flatMap((b) => {
+      const richText =
+        b.paragraph?.rich_text ??
+        b.heading_1?.rich_text ??
+        b.heading_2?.rich_text ??
+        b.heading_3?.rich_text ??
+        b.bulleted_list_item?.rich_text ??
+        b.numbered_list_item?.rich_text ??
+        b.quote?.rich_text ??
+        b.code?.rich_text ??
+        [];
+      return richText.map((t) => t.plain_text);
+    })
+    .join(" ");
+  const readTime = estimateReadTime(blocksText);
+
   return (
-    <article className="mx-auto max-w-2xl px-6 py-10">
+    <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/blog"
         className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
@@ -227,7 +274,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         Back to all posts
       </Link>
 
-      <h1 className="mt-8 text-4xl font-bold leading-tight text-[color:var(--text)]">
+      <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}
       </h1>
 
@@ -236,7 +283,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <CalendarIcon />
           {formatDate(post.publishedAt)}
         </span>
-        <span>{post.readTime}</span>
+        <span>{readTime}</span>
       </div>
 
       <div className="mt-8">{groupListItems(blocks)}</div>

@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getProjectBySlug, projects } from "@/lib/projects";
+import { getProjectBySlug, getProjects } from "@/lib/projects";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const projects = await getProjects();
   return projects.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = await getProjectBySlug(slug);
   if (!project) return {};
   return {
-    title: `${project.name} | Muhammad Faisal Ghozi`,
+    title: `${project.name} | mfaisalghozi`,
     description: project.description,
   };
 }
@@ -102,12 +103,12 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = await getProjectBySlug(slug);
 
   if (!project) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl px-6 py-10">
+    <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
         href="/projects"
         className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
@@ -118,7 +119,7 @@ export default async function ProjectDetailPage({
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-4xl font-bold text-[color:var(--text)]">{project.name}</h1>
+          <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-4xl">{project.name}</h1>
           <span
             className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[project.status] ?? statusColors["Archived"]}`}
           >

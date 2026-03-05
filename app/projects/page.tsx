@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { getProjects } from "@/lib/projects";
 
+export const revalidate = 1800;
+
 export const metadata = {
   title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",

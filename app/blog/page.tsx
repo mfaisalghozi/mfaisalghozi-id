@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { formatDate, getBlogPosts, estimateReadTime } from "@/lib/notion";
 
+export const revalidate = 1800;
+
 export const metadata = {
   title: "Blog | mfaisalghozi",
   description: "Notes, essays, and technical articles.",

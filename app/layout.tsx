@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -17,7 +19,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mfaisalghozi.id"),
-  title: "Muhammad Faisal Ghozi",
+  title: "mfaisalghozi",
   description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
 };
 
@@ -36,6 +38,8 @@ export default function RootLayout({
             © 2026 All rights reserved.
           </footer>
         </div>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

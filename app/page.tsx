@@ -1,86 +1,6 @@
 import Link from "next/link";
-
-const recentPosts = [
-  {
-    title: "The Art of Minimalist Design",
-    description:
-      "Exploring how less can truly be more when it comes to creating impactful user experiences and interfaces.",
-    date: "Jan 28, 2026",
-    readTime: "5 min read",
-    href: "/blog/the-art-of-minimalist-design",
-  },
-  {
-    title: "How I Build Productive Engineering Systems",
-    description:
-      "A practical framework for planning, building, and shipping software sustainably.",
-    date: "Jan 12, 2026",
-    readTime: "6 min read",
-    href: "/blog/how-i-build-productive-engineering-systems",
-  },
-  {
-    title: "Designing for Clarity in Personal Branding Websites",
-    description:
-      "A breakdown of typography, spacing, and hierarchy decisions that improve trust.",
-    date: "Nov 9, 2025",
-    readTime: "5 min read",
-    href: "/blog/designing-for-clarity-in-personal-branding-websites",
-  },
-  {
-    title: "From Idea to Deployment: My Full-Stack Workflow",
-    description:
-      "A walkthrough of the tools, habits, and decisions that take a project from a rough idea to a live product.",
-    date: "Oct 3, 2025",
-    readTime: "7 min read",
-    href: "/blog/from-idea-to-deployment-my-full-stack-workflow",
-  },
-  {
-    title: "Why I Choose Boring Technology",
-    description:
-      "Stability, community, and predictability matter more than novelty when you're shipping real products.",
-    date: "Sep 15, 2025",
-    readTime: "4 min read",
-    href: "/blog/why-i-choose-boring-technology",
-  },
-];
-
-const featuredProjects = [
-  {
-    name: "Task Manager Pro",
-    description:
-      "A minimalist task management app with drag-and-drop functionality and real-time collaboration features.",
-    stack: ["React", "TypeScript", "Tailwind"],
-    href: "/projects/task-manager-pro",
-    starred: true,
-    external: true,
-  },
-  {
-    name: "Design System Kit",
-    description:
-      "A comprehensive design system with reusable components, documentation, and Figma integration.",
-    stack: ["React", "Storybook", "Figma"],
-    href: "/projects/design-system-kit",
-    starred: true,
-    external: true,
-  },
-  {
-    name: "Portfolio Generator",
-    description:
-      "An open-source tool that helps developers create beautiful portfolio websites in minutes.",
-    stack: ["Next.js", "MDX", "Vercel"],
-    href: "/projects/portfolio-generator",
-    starred: true,
-    external: false,
-  },
-  {
-    name: "Color Palette Builder",
-    description:
-      "Generate accessible color palettes with real-time contrast checking and export to various formats.",
-    stack: ["Vue", "Canvas API", "WCAG"],
-    href: "/projects/color-palette-builder",
-    starred: false,
-    external: true,
-  },
-];
+import { getBlogPosts, formatDate } from "@/lib/notion";
+import { getProjects } from "@/lib/projects";
 
 function CalendarIcon() {
   return (
@@ -102,22 +22,6 @@ function CalendarIcon() {
   );
 }
 
-function BookmarkIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
 
 function ExternalLinkIcon() {
   return (
@@ -192,7 +96,9 @@ function MailIcon() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [recentPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  const featuredProjects = allProjects.slice(0, 4);
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
       {/* Hero */}
@@ -253,21 +159,21 @@ export default function HomePage() {
         <div className="space-y-6">
           {recentPosts.map((post) => (
             <article
-              key={post.title}
+              key={post.slug}
               className="border-b border-[color:var(--line)] pb-6 last:border-0 last:pb-0"
             >
-              <Link href={post.href}>
+              <Link href={`/blog/${post.slug}`}>
                 <h3 className="font-semibold text-[color:var(--text)] transition-colors hover:text-[color:var(--accent)]">
                   {post.title}
                 </h3>
               </Link>
               <p className="mt-1 text-sm leading-relaxed text-[color:var(--muted)]">
-                {post.description}
+                {post.summary}
               </p>
               <div className="mt-2 flex items-center gap-3 text-xs text-[color:var(--muted)]">
                 <span className="flex items-center gap-1.5">
                   <CalendarIcon />
-                  {post.date}
+                  {formatDate(post.publishedAt)}
                 </span>
                 <span>{post.readTime}</span>
               </div>
@@ -290,20 +196,17 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-4">
           {featuredProjects.map((project) => (
             <div
-              key={project.name}
+              key={project.slug}
               className="rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4"
             >
               <div className="flex items-start justify-between">
                 <h3 className="text-sm font-semibold text-[color:var(--text)]">{project.name}</h3>
                 <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
-                  {project.starred && (
-                    <button className="transition-colors hover:text-[color:var(--text)]">
-                      <BookmarkIcon />
-                    </button>
-                  )}
-                  {project.external && (
+                  {project.liveUrl && (
                     <a
-                      href={project.href}
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="transition-colors hover:text-[color:var(--text)]"
                     >
                       <ExternalLinkIcon />

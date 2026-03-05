@@ -24,7 +24,7 @@ export function SiteHeader() {
   const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
 
   useLayoutEffect(() => {
-    const activeIndex = navItems.findIndex((item) => isActivePath(item.href, pathname));
+    const activeIndex = navItems.findIndex((item) => isActivePath(item.href, pathname ?? ""));
     const activeEl = itemRefs.current[activeIndex];
     if (!activeEl) return;
     setPillStyle({ left: activeEl.offsetLeft, width: activeEl.offsetWidth });
@@ -57,7 +57,7 @@ export function SiteHeader() {
               />
             )}
             {navItems.map((item, i) => {
-              const active = isActivePath(item.href, pathname);
+              const active = isActivePath(item.href, pathname ?? "");
               return (
                 <Link
                   key={item.href}

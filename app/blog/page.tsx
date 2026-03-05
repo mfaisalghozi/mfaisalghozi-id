@@ -3,7 +3,7 @@ import Link from "next/link";
 import { formatDate, getBlogPosts } from "@/lib/notion";
 
 export const metadata = {
-  title: "Blog | Muhammad Faisal Ghozi",
+  title: "Blog | mfaisalghozi",
   description: "Notes, essays, and technical articles.",
 };
 

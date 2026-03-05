@@ -33,6 +33,12 @@ export type NotionBlock = {
   code?: { rich_text: NotionRichTextItem[]; language: string };
   quote?: { rich_text: NotionRichTextItem[] };
   divider?: Record<string, never>;
+  image?: {
+    type: "file" | "external";
+    file?: { url: string };
+    external?: { url: string };
+    caption?: NotionRichTextItem[];
+  };
 };
 
 type NotionRichText = {
@@ -54,10 +60,28 @@ type NotionDateProperty = {
   date: { start: string } | null;
 };
 
+type NotionSelectProperty = {
+  type: "select";
+  select: { name: string } | null;
+};
+
+type NotionMultiSelectProperty = {
+  type: "multi_select";
+  multi_select: { name: string }[];
+};
+
+type NotionUrlProperty = {
+  type: "url";
+  url: string | null;
+};
+
 type NotionProperty =
   | NotionTitleProperty
   | NotionRichTextProperty
   | NotionDateProperty
+  | NotionSelectProperty
+  | NotionMultiSelectProperty
+  | NotionUrlProperty
   | { type: string };
 
 type NotionPage = {
@@ -603,7 +627,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ page_size: 20 }),
-      next: { revalidate: 300 },
+      next: { revalidate: 1800 },
     },
   );
 
@@ -623,6 +647,126 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   return posts.find((post) => post.slug === slug) ?? null;
 }
 
+// ── Projects ─────────────────────────────────────────────────────────────────
+
+export type Project = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  stack: string[];
+  year: string;
+  status: "Live" | "Open Source" | "In Progress" | "Archived";
+  overview: string;
+  highlights: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+};
+
+function getNamedProperty(
+  properties: Record<string, NotionProperty>,
+  name: string,
+): NotionProperty | undefined {
+  return properties[name];
+}
+
+function normalizeProject(page: NotionPage): Project {
+  const props = page.properties;
+
+  const titleProp = getNamedProperty(props, "Name");
+  const name =
+    titleProp?.type === "title" ? readRichText((titleProp as NotionTitleProperty).title) || "Untitled" : "Untitled";
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
+  const descProp = getNamedProperty(props, "Description");
+  const description =
+    descProp?.type === "rich_text"
+      ? readRichText((descProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const stackProp = getNamedProperty(props, "Stack");
+  const stack =
+    stackProp?.type === "multi_select"
+      ? (stackProp as NotionMultiSelectProperty).multi_select.map((s) => s.name)
+      : [];
+
+  const yearProp = getNamedProperty(props, "Year");
+  const year =
+    yearProp?.type === "rich_text"
+      ? readRichText((yearProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const statusProp = getNamedProperty(props, "Status");
+  const statusValue =
+    statusProp?.type === "select" ? (statusProp as NotionSelectProperty).select?.name ?? "" : "";
+  const status = (["Live", "Open Source", "In Progress", "Archived"].includes(statusValue)
+    ? statusValue
+    : "Archived") as Project["status"];
+
+  const overviewProp = getNamedProperty(props, "Overview");
+  const overview =
+    overviewProp?.type === "rich_text"
+      ? readRichText((overviewProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const highlightsProp = getNamedProperty(props, "Highlights");
+  const highlightsRaw =
+    highlightsProp?.type === "rich_text"
+      ? readRichText((highlightsProp as NotionRichTextProperty).rich_text)
+      : "";
+  const highlights = highlightsRaw
+    .split("\n")
+    .map((h) => h.replace(/^[\s•\-*]+/, "").trim())
+    .filter(Boolean);
+
+  const githubProp = getNamedProperty(props, "Github");
+  const githubUrl =
+    githubProp?.type === "url" ? (githubProp as NotionUrlProperty).url ?? undefined : undefined;
+
+  const liveProp = getNamedProperty(props, "Live");
+  const liveUrl =
+    liveProp?.type === "url" ? (liveProp as NotionUrlProperty).url ?? undefined : undefined;
+
+  return { id: page.id, slug, name, description, stack, year, status, overview, highlights, githubUrl, liveUrl };
+}
+
+export async function getProjectsFromNotion(): Promise<Project[] | null> {
+  const notionApiKey = process.env.NOTION_API_KEY;
+  const notionProjectsDatabaseId = process.env.NOTION_PROJECTS_DATABASE_ID;
+
+  if (!notionApiKey || !notionProjectsDatabaseId) {
+    return null;
+  }
+
+  const response = await fetch(
+    `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ page_size: 50 }),
+      next: { revalidate: 1800 },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to load Notion projects: ${response.status}`);
+  }
+
+  const payload = (await response.json()) as NotionQueryResponse;
+  return payload.results.map(normalizeProject);
+}
+
+// ── Blog post blocks ──────────────────────────────────────────────────────────
+
 export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
 
@@ -635,7 +779,7 @@ export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
       Authorization: `Bearer ${notionApiKey}`,
       "Notion-Version": NOTION_VERSION,
     },
-    next: { revalidate: 300 },
+    next: { revalidate: 1800 },
   });
 
   if (!response.ok) {

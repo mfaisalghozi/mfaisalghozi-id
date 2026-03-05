@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { projects } from "@/lib/projects";
+import { getProjects } from "@/lib/projects";
 
 export const metadata = {
-  title: "Projects | Muhammad Faisal Ghozi",
+  title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",
 };
 
@@ -61,7 +61,9 @@ function ArrowLeftIcon() {
   );
 }
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <Link

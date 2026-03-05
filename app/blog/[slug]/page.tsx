@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,14 +10,14 @@ import {
   type NotionRichTextItem,
 } from "@/lib/notion";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
   return {
-    title: `${post.title} | Muhammad Faisal Ghozi`,
+    title: `${post.title} | mfaisalghozi`,
     description: post.summary,
   };
 }
@@ -123,6 +124,34 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
 
     case "divider":
       return <hr className="my-8 border-[color:var(--line)]" />;
+
+    case "image": {
+      const src =
+        block.image?.type === "file"
+          ? block.image.file?.url
+          : block.image?.external?.url;
+      if (!src) return null;
+      const caption = block.image?.caption?.map((t) => t.plain_text).join("") ?? "";
+      return (
+        <figure className="mt-8">
+          <div className="relative w-full overflow-hidden rounded-xl">
+            <Image
+              src={src}
+              alt={caption || "Blog image"}
+              width={800}
+              height={450}
+              className="w-full object-cover"
+              unoptimized
+            />
+          </div>
+          {caption && (
+            <figcaption className="mt-2 text-center text-xs text-[color:var(--muted)]">
+              {caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
 
     default:
       return null;

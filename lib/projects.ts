@@ -1,18 +1,10 @@
-export type Project = {
-  slug: string;
-  name: string;
-  description: string;
-  stack: string[];
-  year: string;
-  status: "Live" | "Open Source" | "In Progress" | "Archived";
-  overview: string;
-  highlights: string[];
-  githubUrl?: string;
-  liveUrl?: string;
-};
+import { getProjectsFromNotion } from "./notion";
 
-export const projects: Project[] = [
+export type { Project } from "./notion";
+
+const STATIC_PROJECTS: import("./notion").Project[] = [
   {
+    id: "static-task-manager-pro",
     slug: "task-manager-pro",
     name: "Task Manager Pro",
     description:
@@ -32,6 +24,7 @@ export const projects: Project[] = [
     liveUrl: "https://example.com",
   },
   {
+    id: "static-design-system-kit",
     slug: "design-system-kit",
     name: "Design System Kit",
     description:
@@ -50,6 +43,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com",
   },
   {
+    id: "static-portfolio-generator",
     slug: "portfolio-generator",
     name: "Portfolio Generator",
     description:
@@ -69,6 +63,7 @@ export const projects: Project[] = [
     liveUrl: "https://example.com",
   },
   {
+    id: "static-color-palette-builder",
     slug: "color-palette-builder",
     name: "Color Palette Builder",
     description:
@@ -87,6 +82,7 @@ export const projects: Project[] = [
     liveUrl: "https://example.com",
   },
   {
+    id: "static-markdown-editor",
     slug: "markdown-editor",
     name: "Markdown Editor",
     description:
@@ -105,6 +101,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com",
   },
   {
+    id: "static-api-documentation-tool",
     slug: "api-documentation-tool",
     name: "API Documentation Tool",
     description:
@@ -123,6 +120,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com",
   },
   {
+    id: "static-image-optimizer",
     slug: "image-optimizer",
     name: "Image Optimizer",
     description:
@@ -141,6 +139,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com",
   },
   {
+    id: "static-component-library",
     slug: "component-library",
     name: "Component Library",
     description:
@@ -160,6 +159,12 @@ export const projects: Project[] = [
   },
 ];
 
-export function getProjectBySlug(slug: string): Project | undefined {
-  return projects.find((p) => p.slug === slug);
+export async function getProjects(): Promise<import("./notion").Project[]> {
+  const notionProjects = await getProjectsFromNotion();
+  return notionProjects ?? STATIC_PROJECTS;
+}
+
+export async function getProjectBySlug(slug: string): Promise<import("./notion").Project | null> {
+  const all = await getProjects();
+  return all.find((p) => p.slug === slug) ?? null;
 }

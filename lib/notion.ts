@@ -33,6 +33,12 @@ export type NotionBlock = {
   code?: { rich_text: NotionRichTextItem[]; language: string };
   quote?: { rich_text: NotionRichTextItem[] };
   divider?: Record<string, never>;
+  image?: {
+    type: "file" | "external";
+    file?: { url: string };
+    external?: { url: string };
+    caption?: NotionRichTextItem[];
+  };
 };
 
 type NotionRichText = {
@@ -54,10 +60,28 @@ type NotionDateProperty = {
   date: { start: string } | null;
 };
 
+type NotionSelectProperty = {
+  type: "select";
+  select: { name: string } | null;
+};
+
+type NotionMultiSelectProperty = {
+  type: "multi_select";
+  multi_select: { name: string }[];
+};
+
+type NotionUrlProperty = {
+  type: "url";
+  url: string | null;
+};
+
 type NotionProperty =
   | NotionTitleProperty
   | NotionRichTextProperty
   | NotionDateProperty
+  | NotionSelectProperty
+  | NotionMultiSelectProperty
+  | NotionUrlProperty
   | { type: string };
 
 type NotionPage = {
@@ -86,9 +110,9 @@ function getPropertyByType<T extends NotionProperty["type"]>(
   return match as Extract<NotionProperty, { type: T }> | undefined;
 }
 
-function estimateReadTime(text: string): string {
+export function estimateReadTime(text: string, offset = 0): string {
   const words = text.split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.round(words / 200));
+  const minutes = Math.max(1, Math.round(words / 200)) + offset;
   return `${minutes} min read`;
 }
 
@@ -153,6 +177,24 @@ const SAMPLE_POSTS: BlogPost[] = [
       "Exploring how less can truly be more when it comes to creating impactful user experiences and interfaces.",
     publishedAt: "2026-01-28",
     readTime: "5 min read",
+  },
+  {
+    id: "sample-4",
+    title: "From Idea to Deployment: My Full-Stack Workflow",
+    slug: "from-idea-to-deployment-my-full-stack-workflow",
+    summary:
+      "A walkthrough of the tools, habits, and decisions that take a project from a rough idea to a live product.",
+    publishedAt: "2025-10-03",
+    readTime: "7 min read",
+  },
+  {
+    id: "sample-5",
+    title: "Why I Choose Boring Technology",
+    slug: "why-i-choose-boring-technology",
+    summary:
+      "Stability, community, and predictability matter more than novelty when you're shipping real products.",
+    publishedAt: "2025-09-15",
+    readTime: "4 min read",
   },
 ];
 
@@ -394,6 +436,177 @@ const SAMPLE_BLOCKS: Record<string, NotionBlock[]> = {
       },
     },
   ],
+  "sample-4": [
+    {
+      id: "b4-1",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Every project starts as a vague idea. The gap between that idea and a deployed product is where most developers struggle. Here's the workflow I've refined over the years to close that gap consistently.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-2",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "1. Define the Problem First" }] },
+    },
+    {
+      id: "b4-3",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Before writing a single line of code, I write a one-paragraph problem statement. Who has this problem? How are they solving it today? What does success look like? This single habit eliminates entire categories of wasted work.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-4",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "2. Sketch, Don't Design" }] },
+    },
+    {
+      id: "b4-5",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I spend 20 minutes with a pen and paper before opening Figma or a code editor. Low-fidelity sketches are fast to throw away and help me think through flow before committing to implementation details.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-6",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "3. Pick Your Stack and Commit" }] },
+    },
+    {
+      id: "b4-7",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Tech paralysis kills projects. I default to Next.js + Tailwind + Postgres for anything web-based. Boring, reliable, and fast to ship. The stack should be invisible — the product is what matters.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-8",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "4. Deploy Early, Deploy Often" }] },
+    },
+    {
+      id: "b4-9",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I push to production on day one — even if it's just a landing page. Real deployment surfaces real problems. CI/CD via GitHub Actions + Vercel means shipping is a git push, not an event.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b4-10",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "The goal is a tight loop: idea → code → deploy → feedback → repeat. The faster that loop spins, the better the product becomes.",
+          },
+        ],
+      },
+    },
+  ],
+  "sample-5": [
+    {
+      id: "b5-1",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "Every year, the JavaScript ecosystem produces a wave of new frameworks, runtimes, and paradigms. And every year, I resist the urge to adopt most of them. Here's why I keep choosing boring technology — and why I think you should too.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-2",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "Boring Means Proven" }] },
+    },
+    {
+      id: "b5-3",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "When a technology has been around for 5+ years, you're not a beta tester. The rough edges have been filed down. The footguns are documented. The Stack Overflow answers exist. You spend your time building, not debugging the tool itself.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-4",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "Boring Means Hireable" }] },
+    },
+    {
+      id: "b5-5",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "If you're building a team or handing off a project, boring technology means a larger talent pool. React, PostgreSQL, and Node.js developers are everywhere. Developers for that new compile-to-WASM framework you adopted last month are not.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-6",
+      type: "heading_2",
+      heading_2: { rich_text: [{ plain_text: "When to Choose Exciting Technology" }] },
+    },
+    {
+      id: "b5-7",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            plain_text:
+              "I'm not a Luddite. I adopt new tools when they solve a real problem I currently have, not a hypothetical one. The bar is simple: does this make my product better for users, or my team faster? If yes, evaluate it seriously. If no, defer.",
+          },
+        ],
+      },
+    },
+    {
+      id: "b5-8",
+      type: "quote",
+      quote: {
+        rich_text: [
+          {
+            plain_text:
+              "Choose boring technology by default. Reserve innovation tokens for the parts of your product that are genuinely novel.",
+          },
+        ],
+      },
+    },
+  ],
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
@@ -414,7 +627,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ page_size: 20 }),
-      next: { revalidate: 300 },
+      next: { revalidate: 1800 },
     },
   );
 
@@ -426,6 +639,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
   return payload.results
     .map(normalizePost)
+    .filter((post) => !!post.publishedAt)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 }
 
@@ -433,6 +647,126 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const posts = await getBlogPosts();
   return posts.find((post) => post.slug === slug) ?? null;
 }
+
+// ── Projects ─────────────────────────────────────────────────────────────────
+
+export type Project = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  stack: string[];
+  year: string;
+  status: "Live" | "Open Source" | "In Progress" | "Archived";
+  overview: string;
+  highlights: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+};
+
+function getNamedProperty(
+  properties: Record<string, NotionProperty>,
+  name: string,
+): NotionProperty | undefined {
+  return properties[name];
+}
+
+function normalizeProject(page: NotionPage): Project {
+  const props = page.properties;
+
+  const titleProp = getNamedProperty(props, "Name");
+  const name =
+    titleProp?.type === "title" ? readRichText((titleProp as NotionTitleProperty).title) || "Untitled" : "Untitled";
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
+  const descProp = getNamedProperty(props, "Description");
+  const description =
+    descProp?.type === "rich_text"
+      ? readRichText((descProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const stackProp = getNamedProperty(props, "Stack");
+  const stack =
+    stackProp?.type === "multi_select"
+      ? (stackProp as NotionMultiSelectProperty).multi_select.map((s) => s.name)
+      : [];
+
+  const yearProp = getNamedProperty(props, "Year");
+  const year =
+    yearProp?.type === "rich_text"
+      ? readRichText((yearProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const statusProp = getNamedProperty(props, "Status");
+  const statusValue =
+    statusProp?.type === "select" ? (statusProp as NotionSelectProperty).select?.name ?? "" : "";
+  const status = (["Live", "Open Source", "In Progress", "Archived"].includes(statusValue)
+    ? statusValue
+    : "Archived") as Project["status"];
+
+  const overviewProp = getNamedProperty(props, "Overview");
+  const overview =
+    overviewProp?.type === "rich_text"
+      ? readRichText((overviewProp as NotionRichTextProperty).rich_text)
+      : "";
+
+  const highlightsProp = getNamedProperty(props, "Highlights");
+  const highlightsRaw =
+    highlightsProp?.type === "rich_text"
+      ? readRichText((highlightsProp as NotionRichTextProperty).rich_text)
+      : "";
+  const highlights = highlightsRaw
+    .split("\n")
+    .map((h) => h.replace(/^[\s•\-*]+/, "").trim())
+    .filter(Boolean);
+
+  const githubProp = getNamedProperty(props, "Github");
+  const githubUrl =
+    githubProp?.type === "url" ? (githubProp as NotionUrlProperty).url ?? undefined : undefined;
+
+  const liveProp = getNamedProperty(props, "Live");
+  const liveUrl =
+    liveProp?.type === "url" ? (liveProp as NotionUrlProperty).url ?? undefined : undefined;
+
+  return { id: page.id, slug, name, description, stack, year, status, overview, highlights, githubUrl, liveUrl };
+}
+
+export async function getProjectsFromNotion(): Promise<Project[] | null> {
+  const notionApiKey = process.env.NOTION_API_KEY;
+  const notionProjectsDatabaseId = process.env.NOTION_PROJECTS_DATABASE_ID;
+
+  if (!notionApiKey || !notionProjectsDatabaseId) {
+    return null;
+  }
+
+  const response = await fetch(
+    `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ page_size: 50 }),
+      next: { revalidate: 1800 },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to load Notion projects: ${response.status}`);
+  }
+
+  const payload = (await response.json()) as NotionQueryResponse;
+  return payload.results.map(normalizeProject);
+}
+
+// ── Blog post blocks ──────────────────────────────────────────────────────────
 
 export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
@@ -446,7 +780,7 @@ export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
       Authorization: `Bearer ${notionApiKey}`,
       "Notion-Version": NOTION_VERSION,
     },
-    next: { revalidate: 300 },
+    next: { revalidate: 1800 },
   });
 
   if (!response.ok) {

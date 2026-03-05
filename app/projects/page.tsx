@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { projects } from "@/lib/projects";
+import { getProjects } from "@/lib/projects";
 
 export const metadata = {
-  title: "Projects | Muhammad Faisal Ghozi",
+  title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",
 };
 
@@ -61,7 +61,9 @@ function ArrowLeftIcon() {
   );
 }
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <Link
@@ -72,7 +74,7 @@ export default function ProjectsPage() {
         Back to home
       </Link>
 
-      <h1 className="mt-6 text-4xl font-bold text-[color:var(--text)]">All Projects</h1>
+      <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">All Projects</h1>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {projects.map((project) => (

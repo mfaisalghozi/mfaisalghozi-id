@@ -14,9 +14,10 @@ pnpm lint         # run ESLint
 
 Environment variables are required for Notion integration. Copy `.env.example` to `.env.local` and fill in:
 - `NOTION_API_KEY` — Notion internal integration secret
-- `NOTION_DATABASE_ID` — ID of the shared Notion database
+- `NOTION_DATABASE_ID` — ID of the blog Notion database
+- `NOTION_PROJECTS_DATABASE_ID` — ID of the projects Notion database
 
-Without these, the blog falls back to hardcoded sample posts/blocks in `lib/notion.ts`.
+Without these, the blog falls back to hardcoded sample posts/blocks in `lib/notion.ts`, and projects fall back to the static array in `lib/projects.ts`.
 
 ## Architecture
 
@@ -31,7 +32,7 @@ This is a **Next.js 16 App Router** personal website deployed to `mfaisalghozi.i
 
 **Data layers:**
 - `lib/notion.ts` — All Notion API calls (raw `fetch`, not the Notion SDK). Normalizes database pages into `BlogPost` objects and fetches page blocks. Blog post slugs are generated from titles. Responses are cached for 300 s via `next: { revalidate: 300 }`.
-- `lib/projects.ts` — Static in-memory array of `Project` objects; no external data source.
+- `lib/projects.ts` — Async `getProjects()` / `getProjectBySlug()` that fetch from Notion (`NOTION_PROJECTS_DATABASE_ID`) with fallback to a static array. `Project` type is defined in `lib/notion.ts`.
 
 **Theming:**
 - Dark/light mode via `data-theme` attribute on `<html>` (toggled by `components/theme-toggle.tsx`).

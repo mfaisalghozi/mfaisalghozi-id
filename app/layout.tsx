@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -36,6 +37,7 @@ export default function RootLayout({
             © 2026 All rights reserved.
           </footer>
         </div>
+        <SpeedInsights />
       </body>
     </html>
   );

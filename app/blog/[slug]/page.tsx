@@ -10,6 +10,7 @@ import {
   type NotionRichTextItem,
 } from "@/lib/notion";
 import BackButton from "@/components/back-button";
+import { TagPill } from "@/components/tag-pill";
 
 export const revalidate = 1800;
 
@@ -312,12 +313,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {post.title}
       </h1>
 
-      <div className="mt-4 flex items-center gap-4 text-sm text-[color:var(--muted)]">
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[color:var(--muted)]">
         <span className="flex items-center gap-1.5">
           <CalendarIcon />
           {formatDate(post.publishedAt)}
         </span>
         <span>{readTime}</span>
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {post.tags.map((tag) => (
+              <TagPill key={tag} tag={tag} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8">{groupListItems(blocks)}</div>

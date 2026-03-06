@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { formatDate, getBlogPosts, estimateReadTime } from "@/lib/notion";
+import { TagPill } from "@/components/tag-pill";
 
 export const revalidate = 1800;
 
@@ -79,10 +80,10 @@ export default async function BlogPage() {
 
       <div className="mt-10 space-y-px">
         {posts.map((post) => (
-          <article key={post.id}>
+          <article key={post.id} className="border-b border-[color:var(--line)] py-6 last:border-0">
             <Link
               href={`/blog/${post.slug}`}
-              className="group block border-b border-[color:var(--line)] py-6 last:border-0"
+              className="group block"
             >
               <div className="flex items-center gap-3 text-xs text-[color:var(--muted)]">
                 <span className="flex items-center gap-1.5">
@@ -101,6 +102,13 @@ export default async function BlogPage() {
                 Read article →
               </span>
             </Link>
+            {post.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {post.tags.map((tag) => (
+                  <TagPill key={tag} tag={tag} />
+                ))}
+              </div>
+            )}
           </article>
         ))}
       </div>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getBlogPosts, formatDate, estimateReadTime } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
 
+export const revalidate = 1800; // 30 minutes
+
 function CalendarIcon() {
   return (
     <svg

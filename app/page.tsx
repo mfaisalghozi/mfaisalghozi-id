@@ -105,9 +105,9 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="mb-10 sm:mb-16">
         <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>
-        <p className="mt-1 text-sm text-[color:var(--muted)]">An Optimistic Nihilism & Software Engineer</p>
+        <p className="mt-1 text-sm text-[color:var(--muted)]">Software Engineer & An Optimistic Nihilism</p>
         <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
-          I design and build digital products with a clear focus on speed, usability, and measurable
+          I build digital products with a clear focus on speed, usability, and measurable
           impact. Passionate about clean code, good design, and tools that make life easier.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">

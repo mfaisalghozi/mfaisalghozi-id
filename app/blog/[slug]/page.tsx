@@ -62,65 +62,102 @@ function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
   });
 }
 
+function BlockChildren({ blocks }: { blocks: NotionBlock[] }) {
+  return (
+    <div className="ml-1 mt-1 border-l border-[color:var(--line)] pl-4">
+      {groupListItems(blocks)}
+    </div>
+  );
+}
+
 function BlockRenderer({ block }: { block: NotionBlock }) {
+  const children =
+    block.children && block.children.length > 0 ? (
+      <BlockChildren blocks={block.children} />
+    ) : null;
+
   switch (block.type) {
     case "heading_1":
       return (
-        <h1 className="mt-10 text-3xl font-semibold text-[color:var(--text)]">
-          {renderRichText(block.heading_1?.rich_text ?? [])}
-        </h1>
+        <>
+          <h1 className="mt-10 text-3xl font-semibold text-[color:var(--text)]">
+            {renderRichText(block.heading_1?.rich_text ?? [])}
+          </h1>
+          {children}
+        </>
       );
 
     case "heading_2":
       return (
-        <h2 className="mt-10 text-2xl font-semibold text-[color:var(--text)]">
-          {renderRichText(block.heading_2?.rich_text ?? [])}
-        </h2>
+        <>
+          <h2 className="mt-10 text-2xl font-semibold text-[color:var(--text)]">
+            {renderRichText(block.heading_2?.rich_text ?? [])}
+          </h2>
+          {children}
+        </>
       );
 
     case "heading_3":
       return (
-        <h3 className="mt-8 text-xl font-semibold text-[color:var(--text)]">
-          {renderRichText(block.heading_3?.rich_text ?? [])}
-        </h3>
+        <>
+          <h3 className="mt-8 text-xl font-semibold text-[color:var(--text)]">
+            {renderRichText(block.heading_3?.rich_text ?? [])}
+          </h3>
+          {children}
+        </>
       );
 
     case "paragraph": {
       const text = block.paragraph?.rich_text ?? [];
-      if (text.length === 0) return <div className="mt-6" />;
+      if (text.length === 0) return <div className="h-4" />;
       return (
-        <p className="mt-5 leading-relaxed text-[color:var(--muted)]">
-          {renderRichText(text)}
-        </p>
+        <>
+          <p className="mt-5 leading-relaxed text-[color:var(--muted)]">
+            {renderRichText(text)}
+          </p>
+          {children}
+        </>
       );
     }
 
     case "bulleted_list_item":
       return (
-        <li className="mt-2 leading-relaxed text-[color:var(--muted)]">
-          {renderRichText(block.bulleted_list_item?.rich_text ?? [])}
-        </li>
+        <>
+          <li className="mt-2 leading-relaxed text-[color:var(--muted)]">
+            {renderRichText(block.bulleted_list_item?.rich_text ?? [])}
+          </li>
+          {children}
+        </>
       );
 
     case "numbered_list_item":
       return (
-        <li className="mt-2 leading-relaxed text-[color:var(--muted)]">
-          {renderRichText(block.numbered_list_item?.rich_text ?? [])}
-        </li>
+        <>
+          <li className="mt-2 leading-relaxed text-[color:var(--muted)]">
+            {renderRichText(block.numbered_list_item?.rich_text ?? [])}
+          </li>
+          {children}
+        </>
       );
 
     case "quote":
       return (
-        <blockquote className="mt-6 border-l-2 border-[color:var(--accent)] pl-4 italic text-[color:var(--muted)]">
-          {renderRichText(block.quote?.rich_text ?? [])}
-        </blockquote>
+        <>
+          <blockquote className="mt-6 border-l-2 border-[color:var(--accent)] pl-4 italic text-[color:var(--muted)]">
+            {renderRichText(block.quote?.rich_text ?? [])}
+          </blockquote>
+          {children}
+        </>
       );
 
     case "code":
       return (
-        <pre className="mt-6 overflow-x-auto rounded-xl bg-[color:var(--surface)] p-4 font-mono text-sm text-[color:var(--text)]">
-          <code>{block.code?.rich_text.map((t) => t.plain_text).join("")}</code>
-        </pre>
+        <>
+          <pre className="mt-6 overflow-x-auto rounded-xl bg-[color:var(--surface)] p-4 font-mono text-sm text-[color:var(--text)]">
+            <code>{block.code?.rich_text.map((t) => t.plain_text).join("")}</code>
+          </pre>
+          {children}
+        </>
       );
 
     case "divider":

@@ -7,6 +7,7 @@ export type BlogPost = {
   summary: string;
   publishedAt: string;
   readTime: string;
+  tags: string[];
 };
 
 export type NotionRichTextItem = {
@@ -122,10 +123,12 @@ function normalizePost(page: NotionPage): BlogPost {
   const titleProp = getPropertyByType(page.properties, "title");
   const richTextProp = getPropertyByType(page.properties, "rich_text");
   const dateProp = getPropertyByType(page.properties, "date");
+  const multiSelectProp = getPropertyByType(page.properties, "multi_select");
 
   const title = readRichText(titleProp?.title) || "Untitled";
   const summary = readRichText(richTextProp?.rich_text) || "No summary provided.";
   const publishedAt = dateProp?.date?.start ?? "";
+  const tags = multiSelectProp?.multi_select.map((t) => t.name) ?? [];
   const slug = title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
@@ -139,6 +142,7 @@ function normalizePost(page: NotionPage): BlogPost {
     summary,
     publishedAt,
     readTime: estimateReadTime(summary),
+    tags,
   };
 }
 
@@ -162,6 +166,7 @@ const SAMPLE_POSTS: BlogPost[] = [
     summary: "A practical framework for planning, building, and shipping software sustainably.",
     publishedAt: "2026-01-12",
     readTime: "6 min read",
+    tags: ["engineering", "productivity"],
   },
   {
     id: "sample-2",
@@ -170,6 +175,7 @@ const SAMPLE_POSTS: BlogPost[] = [
     summary: "A breakdown of typography, spacing, and hierarchy decisions that improve trust.",
     publishedAt: "2025-11-09",
     readTime: "5 min read",
+    tags: ["design", "branding"],
   },
   {
     id: "sample-3",
@@ -179,6 +185,7 @@ const SAMPLE_POSTS: BlogPost[] = [
       "Exploring how less can truly be more when it comes to creating impactful user experiences and interfaces.",
     publishedAt: "2026-01-28",
     readTime: "5 min read",
+    tags: ["design"],
   },
   {
     id: "sample-4",
@@ -188,6 +195,7 @@ const SAMPLE_POSTS: BlogPost[] = [
       "A walkthrough of the tools, habits, and decisions that take a project from a rough idea to a live product.",
     publishedAt: "2025-10-03",
     readTime: "7 min read",
+    tags: ["engineering", "workflow"],
   },
   {
     id: "sample-5",
@@ -197,6 +205,7 @@ const SAMPLE_POSTS: BlogPost[] = [
       "Stability, community, and predictability matter more than novelty when you're shipping real products.",
     publishedAt: "2025-09-15",
     readTime: "4 min read",
+    tags: ["engineering", "opinion"],
   },
 ];
 
@@ -648,6 +657,11 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const posts = await getBlogPosts();
   return posts.find((post) => post.slug === slug) ?? null;
+}
+
+export async function getBlogPostsByTag(tag: string): Promise<BlogPost[]> {
+  const posts = await getBlogPosts();
+  return posts.filter((post) => post.tags.includes(tag));
 }
 
 // ── Projects ─────────────────────────────────────────────────────────────────

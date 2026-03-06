@@ -278,7 +278,9 @@ export default function HomePage() {
               className="rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4"
             >
               <div className="flex items-start justify-between">
-                <h3 className="text-sm font-semibold text-[color:var(--text)]">{project.name}</h3>
+                <Link href={project.href}>
+                  <h3 className="text-sm font-semibold text-[color:var(--text)] transition-colors hover:text-[color:var(--accent)]">{project.name}</h3>
+                </Link>
                 <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
                   {project.starred && (
                     <button className="transition-colors hover:text-[color:var(--text)]">

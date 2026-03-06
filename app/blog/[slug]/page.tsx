@@ -17,9 +17,30 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
+
+  const title = `${post.title} | mfaisalghozi`;
+  const url = `https://mfaisalghozi.id/blog/${slug}`;
+
   return {
-    title: `${post.title} | mfaisalghozi`,
+    title,
     description: post.summary,
+    openGraph: {
+      title,
+      description: post.summary,
+      url,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: ["Muhammad Faisal Ghozi"],
+      siteName: "mfaisalghozi",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: post.summary,
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 

@@ -22,6 +22,18 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://mfaisalghozi.id"),
   title: "mfaisalghozi",
   description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+  openGraph: {
+    title: "mfaisalghozi",
+    description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+    url: "https://mfaisalghozi.id",
+    siteName: "mfaisalghozi",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "mfaisalghozi",
+    description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+  },
 };
 
 export default function RootLayout({

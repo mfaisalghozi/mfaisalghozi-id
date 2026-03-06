@@ -4,9 +4,23 @@ import { formatDate, getBlogPosts, estimateReadTime } from "@/lib/notion";
 
 export const revalidate = 1800;
 
+const BLOG_DESCRIPTION = "My series of thoughts, contemplation, and engineering idea";
+
 export const metadata = {
   title: "Blog | mfaisalghozi",
-  description: "Notes, essays, and technical articles.",
+  description: BLOG_DESCRIPTION,
+  openGraph: {
+    title: "Blog | mfaisalghozi",
+    description: BLOG_DESCRIPTION,
+    url: "https://mfaisalghozi.id/blog",
+    siteName: "mfaisalghozi",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | mfaisalghozi",
+    description: BLOG_DESCRIPTION,
+  },
 };
 
 function ArrowLeftIcon() {
@@ -61,9 +75,7 @@ export default async function BlogPage() {
       </Link>
 
       <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">Blog</h1>
-      <p className="mt-2 text-[color:var(--muted)]">
-        Thoughts on engineering, design systems, and building products with clarity.
-      </p>
+      <p className="mt-2 text-[color:var(--muted)]">{BLOG_DESCRIPTION}</p>
 
       <div className="mt-10 space-y-px">
         {posts.map((post) => (

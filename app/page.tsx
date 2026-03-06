@@ -100,8 +100,23 @@ export default async function HomePage() {
   const [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
   const recentPosts = allPosts.slice(0, 5);
   const featuredProjects = allProjects.slice(0, 6);
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Muhammad Faisal Ghozi",
+    url: "https://mfaisalghozi.id",
+    sameAs: [
+      "https://github.com/mfaisalghozi",
+      "https://linkedin.com/in/mfaisalghozi",
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
       {/* Hero */}
       <section className="mb-10 sm:mb-16">
         <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>

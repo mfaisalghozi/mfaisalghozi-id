@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   estimateReadTime,
   formatDate,
+  getBlogPosts,
   getPostBySlug,
   getPostBlocks,
   type NotionBlock,
@@ -13,6 +14,11 @@ import BackButton from "@/components/back-button";
 import { TagPill } from "@/components/tag-pill";
 
 export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -33,11 +39,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: post.publishedAt,
       authors: ["Muhammad Faisal Ghozi"],
       siteName: "mfaisalghozi",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: post.summary,
+      images: ["/opengraph-image"],
     },
     alternates: {
       canonical: url,
@@ -305,8 +313,31 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .join(" ");
   const readTime = estimateReadTime(blocksText);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.summary,
+    datePublished: post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: "Muhammad Faisal Ghozi",
+      url: "https://mfaisalghozi.id",
+    },
+    url: `https://mfaisalghozi.id/blog/${post.slug}`,
+    publisher: {
+      "@type": "Person",
+      name: "Muhammad Faisal Ghozi",
+      url: "https://mfaisalghozi.id",
+    },
+  };
+
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <BackButton />
 
       <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">

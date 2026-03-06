@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
@@ -10,6 +9,7 @@ import {
   type NotionBlock,
   type NotionRichTextItem,
 } from "@/lib/notion";
+import BackButton from "@/components/back-button";
 
 export const revalidate = 1800;
 
@@ -201,24 +201,6 @@ function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
   return result;
 }
 
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
 function CalendarIcon() {
   return (
     <svg
@@ -266,13 +248,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link
-        href="/blog"
-        className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
-      >
-        <ArrowLeftIcon />
-        Back to all posts
-      </Link>
+      <BackButton />
 
       <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}

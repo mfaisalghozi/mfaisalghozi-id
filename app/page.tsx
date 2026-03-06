@@ -198,7 +198,7 @@ export default async function HomePage() {
           {featuredProjects.map((project) => (
             <div
               key={project.slug}
-              className="relative rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4 transition-colors hover:border-[color:var(--accent)]"
+              className="group relative rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4 transition-colors hover:border-[color:var(--accent)]"
             >
               <Link
                 href={`/projects/${project.slug}?from=home`}
@@ -206,7 +206,7 @@ export default async function HomePage() {
                 aria-label={project.name}
               />
               <div className="relative z-10 flex items-start justify-between">
-                <h3 className="text-sm font-semibold text-[color:var(--text)]">{project.name}</h3>
+                <h3 className="text-sm font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)]">{project.name}</h3>
                 <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
                   {project.liveUrl && (
                     <a

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 function ArrowLeftIcon() {
   return (
@@ -33,10 +35,17 @@ export default function BackButton({
   homeLabel = "Back to home",
 }: BackButtonProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const fromHome = searchParams.get("from") === "home";
 
   const href = fromHome ? "/" : defaultHref;
   const label = fromHome ? homeLabel : defaultLabel;
+
+  useEffect(() => {
+    if (fromHome) {
+      router.prefetch("/");
+    }
+  }, [fromHome, router]);
 
   return (
     <Link

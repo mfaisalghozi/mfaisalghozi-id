@@ -105,13 +105,13 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="mb-10 sm:mb-16">
         <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>
-        <p className="mt-1 text-sm text-[color:var(--muted)]">Software Engineer, Builder, Thinker</p>
+        <p className="mt-1 text-sm text-[color:var(--muted)]">Software Engineer & An Optimistic Nihilism</p>
         <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
-          I design and build digital products with a clear focus on speed, usability, and measurable
+          I build digital products with a clear focus on speed, usability, and measurable
           impact. Passionate about clean code, good design, and tools that make life easier.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {["UI Designer", "Frontend"].map((skill) => (
+          {["Fullstack Developer", "Minimalist", "Essentialist", "Reader"].map((skill) => (
             <span
               key={skill}
               className="rounded-full border border-[color:var(--line)] bg-[color:var(--surface)] px-3 py-1 text-xs font-medium text-[color:var(--muted)]"
@@ -163,7 +163,7 @@ export default async function HomePage() {
               key={post.slug}
               className="border-b border-[color:var(--line)] pb-6 last:border-0 last:pb-0"
             >
-              <Link href={`/blog/${post.slug}`}>
+              <Link href={`/blog/${post.slug}?from=home`}>
                 <h3 className="font-semibold text-[color:var(--text)] transition-colors hover:text-[color:var(--accent)]">
                   {post.title}
                 </h3>
@@ -198,27 +198,32 @@ export default async function HomePage() {
           {featuredProjects.map((project) => (
             <div
               key={project.slug}
-              className="rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4"
+              className="group relative rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4 transition-colors hover:border-[color:var(--accent)]"
             >
-              <div className="flex items-start justify-between">
-                <h3 className="text-sm font-semibold text-[color:var(--text)]">{project.name}</h3>
+              <Link
+                href={`/projects/${project.slug}?from=home`}
+                className="absolute inset-0 z-0 rounded-xl"
+                aria-label={project.name}
+              />
+              <div className="relative z-10 flex items-start justify-between">
+                <h3 className="text-sm font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)]">{project.name}</h3>
                 <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
                   {project.liveUrl && (
                     <a
                       href={project.liveUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="transition-colors hover:text-[color:var(--text)]"
+                      className="relative z-10 transition-colors hover:text-[color:var(--text)]"
                     >
                       <ExternalLinkIcon />
                     </a>
                   )}
                 </div>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
+              <p className="relative z-10 mt-2 text-xs leading-relaxed text-[color:var(--muted)]">
                 {project.description}
               </p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="relative z-10 mt-3 flex flex-wrap gap-1.5">
                 {project.stack.map((tech) => (
                   <span
                     key={tech}

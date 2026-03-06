@@ -24,6 +24,8 @@ export type NotionRichTextItem = {
 export type NotionBlock = {
   id: string;
   type: string;
+  has_children?: boolean;
+  children?: NotionBlock[];
   paragraph?: { rich_text: NotionRichTextItem[] };
   heading_1?: { rich_text: NotionRichTextItem[] };
   heading_2?: { rich_text: NotionRichTextItem[] };
@@ -768,6 +770,31 @@ export async function getProjectsFromNotion(): Promise<Project[] | null> {
 
 // ── Blog post blocks ──────────────────────────────────────────────────────────
 
+async function fetchBlocksRecursively(blockId: string, apiKey: string): Promise<NotionBlock[]> {
+  const response = await fetch(`https://api.notion.com/v1/blocks/${blockId}/children`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Notion-Version": NOTION_VERSION,
+    },
+    next: { revalidate: 1800 },
+  });
+
+  if (!response.ok) return [];
+
+  const payload = (await response.json()) as NotionBlocksResponse;
+  const blocks = payload.results;
+
+  await Promise.all(
+    blocks
+      .filter((b) => b.has_children)
+      .map(async (b) => {
+        b.children = await fetchBlocksRecursively(b.id, apiKey);
+      }),
+  );
+
+  return blocks;
+}
+
 export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
 
@@ -775,18 +802,5 @@ export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
     return SAMPLE_BLOCKS[postId] ?? [];
   }
 
-  const response = await fetch(`https://api.notion.com/v1/blocks/${postId}/children`, {
-    headers: {
-      Authorization: `Bearer ${notionApiKey}`,
-      "Notion-Version": NOTION_VERSION,
-    },
-    next: { revalidate: 1800 },
-  });
-
-  if (!response.ok) {
-    return [];
-  }
-
-  const payload = (await response.json()) as NotionBlocksResponse;
-  return payload.results;
+  return fetchBlocksRecursively(postId, notionApiKey);
 }

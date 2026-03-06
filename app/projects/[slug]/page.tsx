@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getProjectBySlug, getProjects } from "@/lib/projects";
+import BackButton from "@/components/back-button";
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -18,23 +18,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
 
 function GithubIcon() {
   return (
@@ -109,13 +92,7 @@ export default async function ProjectDetailPage({
 
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link
-        href="/projects"
-        className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
-      >
-        <ArrowLeftIcon />
-        Back to projects
-      </Link>
+      <BackButton defaultHref="/projects" defaultLabel="Back to projects" />
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-3">

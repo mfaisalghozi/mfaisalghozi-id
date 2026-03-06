@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 function ArrowLeftIcon() {
   return (
@@ -22,39 +22,25 @@ function ArrowLeftIcon() {
 }
 
 interface BackButtonProps {
-  blogHref?: string;
-  homeHref?: string;
+  defaultHref?: string;
+  defaultLabel?: string;
+  homeLabel?: string;
 }
 
 export default function BackButton({
-  blogHref = "/blog",
-  homeHref = "/",
+  defaultHref = "/blog",
+  defaultLabel = "Back to all posts",
+  homeLabel = "Back to home",
 }: BackButtonProps) {
-  const [backHref, setBackHref] = useState(blogHref);
-  const [label, setLabel] = useState("Back to all posts");
+  const searchParams = useSearchParams();
+  const fromHome = searchParams.get("from") === "home";
 
-  useEffect(() => {
-    const referrer = document.referrer;
-    if (referrer) {
-      try {
-        const referrerUrl = new URL(referrer);
-        const isSameOrigin = referrerUrl.origin === window.location.origin;
-        if (isSameOrigin && referrerUrl.pathname === "/") {
-          setBackHref(homeHref);
-          setLabel("Back to home");
-          return;
-        }
-      } catch {
-        // ignore malformed referrer
-      }
-    }
-    setBackHref(blogHref);
-    setLabel("Back to all posts");
-  }, [blogHref, homeHref]);
+  const href = fromHome ? "/" : defaultHref;
+  const label = fromHome ? homeLabel : defaultLabel;
 
   return (
     <Link
-      href={backHref}
+      href={href}
       className="inline-flex items-center gap-2 text-sm text-[color:var(--muted)] transition-colors hover:text-[color:var(--text)]"
     >
       <ArrowLeftIcon />

@@ -7,6 +7,20 @@ export const revalidate = 1800;
 export const metadata = {
   title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",
+  openGraph: {
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    url: "https://mfaisalghozi.id/projects",
+    siteName: "mfaisalghozi",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    images: ["/opengraph-image"],
+  },
 };
 
 function GithubIcon() {

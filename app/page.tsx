@@ -99,7 +99,13 @@ function MailIcon() {
 }
 
 export default async function HomePage() {
-  const [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  let allPosts: Awaited<ReturnType<typeof getBlogPosts>>;
+  let allProjects: Awaited<ReturnType<typeof getProjects>>;
+  try {
+    [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  } catch (err) {
+    throw new Error(`Failed to load home page data: ${err instanceof Error ? err.message : String(err)}`);
+  }
   const recentPosts = allPosts.slice(0, 5);
   const featuredProjects = allProjects.slice(0, 6);
   return (

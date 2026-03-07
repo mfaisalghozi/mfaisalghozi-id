@@ -160,11 +160,19 @@ const STATIC_PROJECTS: import("./notion").Project[] = [
 ];
 
 export async function getProjects(): Promise<import("./notion").Project[]> {
-  const notionProjects = await getProjectsFromNotion();
-  return notionProjects ?? STATIC_PROJECTS;
+  try {
+    const notionProjects = await getProjectsFromNotion();
+    return notionProjects ?? STATIC_PROJECTS;
+  } catch (err) {
+    throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
+  }
 }
 
 export async function getProjectBySlug(slug: string): Promise<import("./notion").Project | null> {
-  const all = await getProjects();
-  return all.find((p) => p.slug === slug) ?? null;
+  try {
+    const all = await getProjects();
+    return all.find((p) => p.slug === slug) ?? null;
+  } catch (err) {
+    throw new Error(`Failed to load project: ${err instanceof Error ? err.message : String(err)}`);
+  }
 }

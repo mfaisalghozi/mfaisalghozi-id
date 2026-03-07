@@ -664,6 +664,19 @@ export async function getBlogPostsByTag(tag: string): Promise<BlogPost[]> {
   return posts.filter((post) => post.tags.includes(tag));
 }
 
+export async function getBlogPostsByMonth(month: string): Promise<BlogPost[]> {
+  const posts = await getBlogPosts();
+  return posts.filter((post) => post.publishedAt.startsWith(month));
+}
+
+export function formatMonth(dateString: string): string {
+  if (!dateString) return "Unknown";
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+  }).format(new Date(dateString));
+}
+
 // ── Projects ─────────────────────────────────────────────────────────────────
 
 export type Project = {

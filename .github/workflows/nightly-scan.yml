@@ -1,0 +1,343 @@
+name: Nightly Codebase Scan
+
+on:
+  schedule:
+    - cron: '0 23 * * *' # Every night at 11 PM UTC
+  workflow_dispatch:     # Allow manual trigger from GitHub UI
+
+jobs:
+  security-scan:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    outputs:
+      audit_result: ${{ steps.audit.outputs.result }}
+      audit_status: ${{ steps.audit.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run dependency security audit
+        id: audit
+        run: |
+          set +e
+          AUDIT_OUTPUT=$(pnpm audit --json 2>&1)
+          AUDIT_EXIT=$?
+          set -e
+
+          VULN_COUNT=$(echo "$AUDIT_OUTPUT" | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
+              try {
+                const j=JSON.parse(d);
+                const meta=j.metadata||{};
+                const v=(meta.vulnerabilities||{});
+                const total=(v.critical||0)+(v.high||0)+(v.moderate||0)+(v.low||0);
+                console.log(total);
+              } catch(e){ console.log('0'); }
+            });
+          " <<< "$AUDIT_OUTPUT" || echo "0")
+
+          if [ "$AUDIT_EXIT" -eq "0" ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "result=No vulnerabilities found" >> $GITHUB_OUTPUT
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "result=${VULN_COUNT} vulnerabilit(ies) found" >> $GITHUB_OUTPUT
+          fi
+
+          # Always write full audit to summary
+          echo "### Security Audit" >> $GITHUB_STEP_SUMMARY
+          if [ "$AUDIT_EXIT" -eq "0" ]; then
+            echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Vulnerabilities detected: ${VULN_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            pnpm audit 2>&1 || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  lint-scan:
+    name: Code Quality (Lint)
+    runs-on: ubuntu-latest
+    outputs:
+      lint_status: ${{ steps.lint.outputs.status }}
+      lint_result: ${{ steps.lint.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        id: lint
+        run: |
+          set +e
+          LINT_OUTPUT=$(pnpm lint 2>&1)
+          LINT_EXIT=$?
+          set -e
+
+          echo "### Code Quality (ESLint)" >> $GITHUB_STEP_SUMMARY
+          if [ "$LINT_EXIT" -eq "0" ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "result=No lint errors found" >> $GITHUB_OUTPUT
+            echo "✅ No lint errors found" >> $GITHUB_STEP_SUMMARY
+          else
+            ERROR_COUNT=$(echo "$LINT_OUTPUT" | grep -c "error" || echo "?")
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "result=${ERROR_COUNT} lint error(s) found" >> $GITHUB_OUTPUT
+            echo "❌ Lint errors detected" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$LINT_OUTPUT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  type-check:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    outputs:
+      ts_status: ${{ steps.tsc.outputs.status }}
+      ts_result: ${{ steps.tsc.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript compiler check
+        id: tsc
+        run: |
+          set +e
+          TSC_OUTPUT=$(pnpm exec tsc --noEmit 2>&1)
+          TSC_EXIT=$?
+          set -e
+
+          echo "### TypeScript Type Check" >> $GITHUB_STEP_SUMMARY
+          if [ "$TSC_EXIT" -eq "0" ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "result=No type errors found" >> $GITHUB_OUTPUT
+            echo "✅ No type errors found" >> $GITHUB_STEP_SUMMARY
+          else
+            ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || echo "?")
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "result=${ERROR_COUNT} type error(s) found" >> $GITHUB_OUTPUT
+            echo "❌ Type errors detected" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$TSC_OUTPUT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  outdated-check:
+    name: Dependency Freshness
+    runs-on: ubuntu-latest
+    outputs:
+      outdated_status: ${{ steps.outdated.outputs.status }}
+      outdated_result: ${{ steps.outdated.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for outdated packages
+        id: outdated
+        run: |
+          set +e
+          OUTDATED_OUTPUT=$(pnpm outdated 2>&1)
+          OUTDATED_EXIT=$?
+          set -e
+
+          echo "### Dependency Freshness" >> $GITHUB_STEP_SUMMARY
+          if [ -z "$OUTDATED_OUTPUT" ] || [ "$OUTDATED_EXIT" -eq "0" ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "result=All dependencies are up to date" >> $GITHUB_OUTPUT
+            echo "✅ All dependencies are up to date" >> $GITHUB_STEP_SUMMARY
+          else
+            PKG_COUNT=$(echo "$OUTDATED_OUTPUT" | grep -c "^[^ ]" || echo "?")
+            echo "status=warn" >> $GITHUB_OUTPUT
+            echo "result=${PKG_COUNT} outdated package(s) found" >> $GITHUB_OUTPUT
+            echo "⚠️ Outdated packages detected" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$OUTDATED_OUTPUT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    outputs:
+      build_status: ${{ steps.build.outputs.status }}
+      build_result: ${{ steps.build.outputs.result }}
+    env:
+      NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+      NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+      NOTION_PROJECTS_DATABASE_ID: ${{ secrets.NOTION_PROJECTS_DATABASE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run production build
+        id: build
+        run: |
+          set +e
+          BUILD_OUTPUT=$(pnpm build 2>&1)
+          BUILD_EXIT=$?
+          set -e
+
+          echo "### Build Verification" >> $GITHUB_STEP_SUMMARY
+          if [ "$BUILD_EXIT" -eq "0" ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "result=Build succeeded" >> $GITHUB_OUTPUT
+            echo "✅ Production build succeeded" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "result=Build failed" >> $GITHUB_OUTPUT
+            echo "❌ Production build failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$BUILD_OUTPUT" | tail -50 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  report:
+    name: Nightly Scan Report
+    runs-on: ubuntu-latest
+    needs: [security-scan, lint-scan, type-check, outdated-check, build-check]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build summary report
+        id: summary
+        run: |
+          AUDIT_STATUS="${{ needs.security-scan.outputs.audit_status }}"
+          LINT_STATUS="${{ needs.lint-scan.outputs.lint_status }}"
+          TS_STATUS="${{ needs.type-check.outputs.ts_status }}"
+          OUTDATED_STATUS="${{ needs.outdated-check.outputs.outdated_status }}"
+          BUILD_STATUS="${{ needs.build-check.outputs.build_status }}"
+
+          # Count failures
+          FAILURES=0
+          WARNINGS=0
+          for s in "$AUDIT_STATUS" "$LINT_STATUS" "$TS_STATUS" "$BUILD_STATUS"; do
+            [ "$s" = "fail" ] && FAILURES=$((FAILURES+1))
+          done
+          [ "$OUTDATED_STATUS" = "warn" ] && WARNINGS=$((WARNINGS+1))
+
+          echo "failures=$FAILURES" >> $GITHUB_OUTPUT
+          echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
+
+          {
+            echo "## Nightly Scan Results — $(date +'%Y-%m-%d')"
+            echo ""
+            echo "| Check | Status | Details |"
+            echo "|-------|--------|---------|"
+            [ "$AUDIT_STATUS" = "pass"  ] && AUDIT_ICON="✅" || AUDIT_ICON="❌"
+            [ "$LINT_STATUS"  = "pass"  ] && LINT_ICON="✅"  || LINT_ICON="❌"
+            [ "$TS_STATUS"    = "pass"  ] && TS_ICON="✅"    || TS_ICON="❌"
+            [ "$OUTDATED_STATUS" = "pass" ] && DEP_ICON="✅" || DEP_ICON="⚠️"
+            [ "$BUILD_STATUS" = "pass"  ] && BUILD_ICON="✅" || BUILD_ICON="❌"
+
+            echo "| Security Audit | $AUDIT_ICON | ${{ needs.security-scan.outputs.audit_result }} |"
+            echo "| ESLint         | $LINT_ICON  | ${{ needs.lint-scan.outputs.lint_result }} |"
+            echo "| TypeScript     | $TS_ICON    | ${{ needs.type-check.outputs.ts_result }} |"
+            echo "| Dependencies   | $DEP_ICON   | ${{ needs.outdated-check.outputs.outdated_result }} |"
+            echo "| Build          | $BUILD_ICON | ${{ needs.build-check.outputs.build_result }} |"
+            echo ""
+            if [ "$FAILURES" -gt "0" ]; then
+              echo "> ❌ **$FAILURES check(s) failed** — review the job logs above."
+            elif [ "$WARNINGS" -gt "0" ]; then
+              echo "> ⚠️ **All critical checks passed** with $WARNINGS warning(s)."
+            else
+              echo "> ✅ **All checks passed.** Codebase is healthy."
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Open GitHub issue if failures found
+        if: steps.summary.outputs.failures != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().split('T')[0];
+            const title = `🚨 Nightly Scan Failed — ${today}`;
+            const body = [
+              `## Nightly Scan Report — ${today}`,
+              '',
+              '| Check | Status | Details |',
+              '|-------|--------|---------|',
+              `| Security Audit | ${{ needs.security-scan.outputs.audit_status == 'pass' && '✅' || '❌' }} | ${{ needs.security-scan.outputs.audit_result }} |`,
+              `| ESLint         | ${{ needs.lint-scan.outputs.lint_status == 'pass' && '✅' || '❌' }} | ${{ needs.lint-scan.outputs.lint_result }} |`,
+              `| TypeScript     | ${{ needs.type-check.outputs.ts_status == 'pass' && '✅' || '❌' }} | ${{ needs.type-check.outputs.ts_result }} |`,
+              `| Dependencies   | ${{ needs.outdated-check.outputs.outdated_status == 'pass' && '✅' || '⚠️' }} | ${{ needs.outdated-check.outputs.outdated_result }} |`,
+              `| Build          | ${{ needs.build-check.outputs.build_status == 'pass' && '✅' || '❌' }} | ${{ needs.build-check.outputs.build_result }} |`,
+              '',
+              `[View full scan logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+            ].join('\n');
+
+            // Check for existing open issue for today
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'nightly-scan',
+              state: 'open',
+            });
+
+            const existing = issues.data.find(i => i.title === title);
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['nightly-scan', 'automated'],
+              });
+              core.info(`Created issue: ${title}`);
+            } else {
+              core.info(`Issue already exists: ${existing.html_url}`);
+            }

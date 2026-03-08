@@ -1,16 +1,17 @@
 import Link from "next/link";
 
-import { getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
+import { getBlogPostsByMonth, formatMonth, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
 import { DateLink } from "@/components/date-link";
 
 export const revalidate = 1800;
 
-export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }) {
-  const { tag } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ month: string }> }) {
+  const { month } = await params;
+  const monthLabel = formatMonth(`${month}-01`);
   return {
-    title: `#${tag} | mfaisalghozi Blog`,
-    description: `Blog posts tagged with "${tag}".`,
+    title: `${monthLabel} | mfaisalghozi Blog`,
+    description: `Blog posts from ${monthLabel}.`,
   };
 }
 
@@ -32,9 +33,10 @@ function ArrowLeftIcon() {
   );
 }
 
-export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
-  const { tag } = await params;
-  const posts = await getBlogPostsByTag(decodeURIComponent(tag));
+export default async function MonthPage({ params }: { params: Promise<{ month: string }> }) {
+  const { month } = await params;
+  const posts = await getBlogPostsByMonth(month);
+  const monthLabel = formatMonth(`${month}-01`);
 
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
@@ -47,14 +49,14 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
       </Link>
 
       <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">
-        <span className="text-[color:var(--accent)]">#{tag}</span>
+        <span className="text-[color:var(--accent)]">{monthLabel}</span>
       </h1>
       <p className="mt-2 text-[color:var(--muted)]">
-        {posts.length} {posts.length === 1 ? "post" : "posts"} tagged with &ldquo;{tag}&rdquo;
+        {posts.length} {posts.length === 1 ? "post" : "posts"} in {monthLabel}
       </p>
 
       {posts.length === 0 ? (
-        <p className="mt-10 text-[color:var(--muted)]">No posts found for this tag.</p>
+        <p className="mt-10 text-[color:var(--muted)]">No posts found for this month.</p>
       ) : (
         <div className="mt-10 space-y-px">
           {posts.map((post) => (

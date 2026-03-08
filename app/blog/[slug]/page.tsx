@@ -270,11 +270,22 @@ function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+
+  let post: Awaited<ReturnType<typeof getPostBySlug>>;
+  try {
+    post = await getPostBySlug(slug);
+  } catch (err) {
+    throw new Error(`Failed to load blog post: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!post) notFound();
 
-  const blocks = await getPostBlocks(post.id);
+  let blocks: Awaited<ReturnType<typeof getPostBlocks>>;
+  try {
+    blocks = await getPostBlocks(post.id);
+  } catch (err) {
+    throw new Error(`Failed to load blog post content: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   const blocksText = blocks
     .flatMap((b) => {

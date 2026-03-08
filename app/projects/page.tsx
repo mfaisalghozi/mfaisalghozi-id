@@ -78,7 +78,12 @@ function ArrowLeftIcon() {
 }
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  let projects: Awaited<ReturnType<typeof getProjects>>;
+  try {
+    projects = await getProjects();
+  } catch (err) {
+    throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">

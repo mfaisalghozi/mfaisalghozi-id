@@ -34,7 +34,13 @@ function ArrowLeftIcon() {
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
-  const posts = await getBlogPostsByTag(decodeURIComponent(tag));
+
+  let posts: Awaited<ReturnType<typeof getBlogPostsByTag>>;
+  try {
+    posts = await getBlogPostsByTag(decodeURIComponent(tag));
+  } catch (err) {
+    throw new Error(`Failed to load posts for tag "${tag}": ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">

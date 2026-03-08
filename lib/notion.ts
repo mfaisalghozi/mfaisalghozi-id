@@ -628,25 +628,35 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return SAMPLE_POSTS;
   }
 
-  const response = await fetch(
-    `https://api.notion.com/v1/databases/${notionDatabaseId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${notionApiKey}`,
-        "Notion-Version": NOTION_VERSION,
-        "Content-Type": "application/json",
+  let response: Response;
+  try {
+    response = await fetch(
+      `https://api.notion.com/v1/databases/${notionDatabaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ page_size: 20 }),
+        next: { revalidate: 1800 },
       },
-      body: JSON.stringify({ page_size: 20 }),
-      next: { revalidate: 1800 },
-    },
-  );
+    );
+  } catch (err) {
+    throw new Error(`Failed to connect to Notion: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to load Notion blog posts: ${response.status}`);
   }
 
-  const payload = (await response.json()) as NotionQueryResponse;
+  let payload: NotionQueryResponse;
+  try {
+    payload = (await response.json()) as NotionQueryResponse;
+  } catch {
+    throw new Error("Failed to parse Notion blog posts response");
+  }
 
   return payload.results
     .map(normalizePost)
@@ -773,42 +783,64 @@ export async function getProjectsFromNotion(): Promise<Project[] | null> {
     return null;
   }
 
-  const response = await fetch(
-    `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${notionApiKey}`,
-        "Notion-Version": NOTION_VERSION,
-        "Content-Type": "application/json",
+  let response: Response;
+  try {
+    response = await fetch(
+      `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ page_size: 50 }),
+        next: { revalidate: 1800 },
       },
-      body: JSON.stringify({ page_size: 50 }),
-      next: { revalidate: 1800 },
-    },
-  );
+    );
+  } catch (err) {
+    throw new Error(`Failed to connect to Notion: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to load Notion projects: ${response.status}`);
   }
 
-  const payload = (await response.json()) as NotionQueryResponse;
+  let payload: NotionQueryResponse;
+  try {
+    payload = (await response.json()) as NotionQueryResponse;
+  } catch {
+    throw new Error("Failed to parse Notion projects response");
+  }
   return payload.results.map(normalizeProject);
 }
 
 // ── Blog post blocks ──────────────────────────────────────────────────────────
 
 async function fetchBlocksRecursively(blockId: string, apiKey: string): Promise<NotionBlock[]> {
-  const response = await fetch(`https://api.notion.com/v1/blocks/${blockId}/children`, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Notion-Version": NOTION_VERSION,
-    },
-    next: { revalidate: 1800 },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`https://api.notion.com/v1/blocks/${blockId}/children`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Notion-Version": NOTION_VERSION,
+      },
+      next: { revalidate: 1800 },
+    });
+  } catch (err) {
+    throw new Error(`Failed to connect to Notion blocks API: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
-  if (!response.ok) return [];
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Notion blocks: ${response.status}`);
+  }
 
-  const payload = (await response.json()) as NotionBlocksResponse;
+  let payload: NotionBlocksResponse;
+  try {
+    payload = (await response.json()) as NotionBlocksResponse;
+  } catch {
+    throw new Error("Failed to parse Notion blocks response");
+  }
   const blocks = payload.results;
 
   await Promise.all(

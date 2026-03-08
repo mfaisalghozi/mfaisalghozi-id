@@ -46,7 +46,12 @@ function ArrowLeftIcon() {
 }
 
 export default async function BlogPage() {
-  const posts = await getBlogPosts();
+  let posts: Awaited<ReturnType<typeof getBlogPosts>>;
+  try {
+    posts = await getBlogPosts();
+  } catch (err) {
+    throw new Error(`Failed to load blog posts: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">

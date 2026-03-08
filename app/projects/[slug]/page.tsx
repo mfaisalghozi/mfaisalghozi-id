@@ -106,7 +106,13 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+
+  let project: Awaited<ReturnType<typeof getProjectBySlug>>;
+  try {
+    project = await getProjectBySlug(slug);
+  } catch (err) {
+    throw new Error(`Failed to load project: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!project) notFound();
 

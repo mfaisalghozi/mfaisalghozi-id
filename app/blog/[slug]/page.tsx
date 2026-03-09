@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
   return items.map((item, i) => {
     let node: React.ReactNode = item.plain_text;
+    const isHighlighted = item.annotations?.color?.endsWith("_background");
 
     if (item.annotations?.code) {
       node = (
@@ -67,11 +68,32 @@ function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
         </code>
       );
     } else if (item.annotations?.bold) {
-      node = <strong key={i}>{node}</strong>;
+      node = (
+        <strong
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </strong>
+      );
     } else if (item.annotations?.italic) {
-      node = <em key={i}>{node}</em>;
+      node = (
+        <em
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </em>
+      );
     } else {
-      node = <span key={i}>{node}</span>;
+      node = (
+        <span
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </span>
+      );
     }
 
     if (item.href) {

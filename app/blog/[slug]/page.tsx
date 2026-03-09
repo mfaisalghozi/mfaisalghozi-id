@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import {
@@ -351,7 +352,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <BackButton />
+      <Suspense fallback={null}>
+        <BackButton />
+      </Suspense>
 
       <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}

@@ -10,12 +10,14 @@ import "./globals.css";
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-ibm-plex-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -45,6 +47,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="dns-prefetch" href="https://api.notion.com" />
+        <link rel="prefetch" href="/blog" />
+        <link rel="prefetch" href="/projects" />
+      </head>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <script
           dangerouslySetInnerHTML={{

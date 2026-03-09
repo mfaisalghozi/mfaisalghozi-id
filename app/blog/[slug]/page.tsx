@@ -231,7 +231,6 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
               width={800}
               height={450}
               className="w-full object-cover"
-              unoptimized
             />
           </div>
           {caption && (

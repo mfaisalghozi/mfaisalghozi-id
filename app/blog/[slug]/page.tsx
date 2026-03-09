@@ -10,6 +10,7 @@ import {
   type NotionRichTextItem,
 } from "@/lib/notion";
 import BackButton from "@/components/back-button";
+import { CalendarIcon } from "@/components/icons";
 
 export const revalidate = 1800;
 
@@ -179,7 +180,6 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
               width={800}
               height={450}
               className="w-full object-cover"
-              unoptimized
             />
           </div>
           {caption && (
@@ -236,26 +236,6 @@ function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
   }
 
   return result;
-}
-
-function CalendarIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 import { useRef, useLayoutEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -22,12 +21,15 @@ export function SiteHeader() {
   const pathname = usePathname();
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
+  const [pillReady, setPillReady] = useState(false);
 
   useLayoutEffect(() => {
     const activeIndex = navItems.findIndex((item) => isActivePath(item.href, pathname ?? ""));
     const activeEl = itemRefs.current[activeIndex];
     if (!activeEl) return;
     setPillStyle({ left: activeEl.offsetLeft, width: activeEl.offsetWidth });
+    // Allow CSS transition only after the first position is set
+    setPillReady(true);
   }, [pathname]);
 
   return (
@@ -43,12 +45,14 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <nav className="relative hidden sm:flex items-center gap-1 rounded-full border border-[color:var(--line)] p-1">
             {pillStyle && (
-              <motion.span
+              <span
                 className="absolute inset-y-1 rounded-full"
-                animate={{ left: pillStyle.left, width: pillStyle.width }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                initial={false}
                 style={{
+                  left: pillStyle.left,
+                  width: pillStyle.width,
+                  transition: pillReady
+                    ? "left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    : "none",
                   background:
                     "linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 7%, transparent))",
                   boxShadow:

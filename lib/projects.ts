@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getProjectsFromNotion } from "./notion";
 
 export type { Project } from "./notion";
@@ -159,10 +160,10 @@ const STATIC_PROJECTS: import("./notion").Project[] = [
   },
 ];
 
-export async function getProjects(): Promise<import("./notion").Project[]> {
+export const getProjects = cache(async function getProjects(): Promise<import("./notion").Project[]> {
   const notionProjects = await getProjectsFromNotion();
   return notionProjects ?? STATIC_PROJECTS;
-}
+});
 
 export async function getProjectBySlug(slug: string): Promise<import("./notion").Project | null> {
   const all = await getProjects();

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 const NOTION_VERSION = "2022-06-28";
 
 export type BlogPost = {
@@ -611,7 +613,7 @@ const SAMPLE_BLOCKS: Record<string, NotionBlock[]> = {
   ],
 };
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
+export const getBlogPosts = cache(async function getBlogPosts(): Promise<BlogPost[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
   const notionDatabaseId = process.env.NOTION_DATABASE_ID;
 
@@ -643,7 +645,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     .map(normalizePost)
     .filter((post) => !!post.publishedAt)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-}
+});
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const posts = await getBlogPosts();
@@ -738,7 +740,7 @@ function normalizeProject(page: NotionPage): Project {
   return { id: page.id, slug, name, description, stack, year, status, overview, highlights, githubUrl, liveUrl };
 }
 
-export async function getProjectsFromNotion(): Promise<Project[] | null> {
+export const getProjectsFromNotion = cache(async function getProjectsFromNotion(): Promise<Project[] | null> {
   const notionApiKey = process.env.NOTION_API_KEY;
   const notionProjectsDatabaseId = process.env.NOTION_PROJECTS_DATABASE_ID;
 
@@ -766,7 +768,7 @@ export async function getProjectsFromNotion(): Promise<Project[] | null> {
 
   const payload = (await response.json()) as NotionQueryResponse;
   return payload.results.map(normalizeProject);
-}
+});
 
 // ── Blog post blocks ──────────────────────────────────────────────────────────
 

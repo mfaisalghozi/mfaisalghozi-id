@@ -17,6 +17,7 @@ export type NotionRichTextItem = {
     strikethrough?: boolean;
     underline?: boolean;
     code?: boolean;
+    color?: string;
   };
   href?: string | null;
 };

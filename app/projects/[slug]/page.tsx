@@ -12,9 +12,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) return {};
+  const title = `${project.name} | mfaisalghozi`;
+  const url = `https://mfaisalghozi.id/projects/${slug}`;
+
   return {
-    title: `${project.name} | mfaisalghozi`,
+    title,
     description: project.description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description: project.description,
+      url,
+      type: "website",
+      siteName: "mfaisalghozi",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: project.description,
+      images: ["/opengraph-image"],
+    },
   };
 }
 
@@ -86,7 +106,13 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+
+  let project: Awaited<ReturnType<typeof getProjectBySlug>>;
+  try {
+    project = await getProjectBySlug(slug);
+  } catch (err) {
+    throw new Error(`Failed to load project: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!project) notFound();
 

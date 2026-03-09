@@ -1,29 +1,9 @@
 import Link from "next/link";
-import { getBlogPosts, formatDate, estimateReadTime } from "@/lib/notion";
+import { getBlogPosts, estimateReadTime } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
+import { DateLink } from "@/components/date-link";
 
 export const revalidate = 1800; // 30 minutes
-
-function CalendarIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
 
 function ExternalLinkIcon() {
   return (
@@ -99,11 +79,32 @@ function MailIcon() {
 }
 
 export default async function HomePage() {
-  const [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  let allPosts: Awaited<ReturnType<typeof getBlogPosts>>;
+  let allProjects: Awaited<ReturnType<typeof getProjects>>;
+  try {
+    [allPosts, allProjects] = await Promise.all([getBlogPosts(), getProjects()]);
+  } catch (err) {
+    throw new Error(`Failed to load home page data: ${err instanceof Error ? err.message : String(err)}`);
+  }
   const recentPosts = allPosts.slice(0, 5);
   const featuredProjects = allProjects.slice(0, 6);
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Muhammad Faisal Ghozi",
+    url: "https://mfaisalghozi.id",
+    sameAs: [
+      "https://github.com/mfaisalghozi",
+      "https://linkedin.com/in/mfaisalghozi",
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
       {/* Hero */}
       <section className="mb-10 sm:mb-16">
         <h1 className="text-3xl font-bold text-[color:var(--text)] sm:text-3xl">Muhammad Faisal Ghozi</h1>
@@ -174,10 +175,7 @@ export default async function HomePage() {
                 {post.summary}
               </p>
               <div className="mt-2 flex items-center gap-3 text-xs text-[color:var(--muted)]">
-                <span className="flex items-center gap-1.5">
-                  <CalendarIcon />
-                  {formatDate(post.publishedAt)}
-                </span>
+                <DateLink publishedAt={post.publishedAt} />
                 <span>~{estimateReadTime(`${post.title} ${post.summary}`, 5)}</span>
               </div>
             </article>

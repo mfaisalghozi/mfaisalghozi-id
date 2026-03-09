@@ -21,18 +21,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mfaisalghozi.id"),
   title: "mfaisalghozi",
-  description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+  description: "A software engineer's corner on the internet — exploring life, ideas, and projects built along the way. Written by Ghozi, driven by curiosity.",
   openGraph: {
     title: "mfaisalghozi",
-    description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+    description: "A software engineer's corner on the internet — exploring life, ideas, and projects built along the way. Written by Ghozi, driven by curiosity.",
     url: "https://mfaisalghozi.id",
     siteName: "mfaisalghozi",
     type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "mfaisalghozi",
-    description: "Personal website of Muhammad Faisal Ghozi: blog posts, projects, and updates.",
+    description: "A software engineer's corner on the internet — exploring life, ideas, and projects built along the way. Written by Ghozi, driven by curiosity.",
+    images: ["/opengraph-image"],
   },
 };
 

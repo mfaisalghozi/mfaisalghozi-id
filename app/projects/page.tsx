@@ -7,6 +7,20 @@ export const revalidate = 1800;
 export const metadata = {
   title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",
+  openGraph: {
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    url: "https://mfaisalghozi.id/projects",
+    siteName: "mfaisalghozi",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    images: ["/opengraph-image"],
+  },
 };
 
 function GithubIcon() {
@@ -64,7 +78,12 @@ function ArrowLeftIcon() {
 }
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  let projects: Awaited<ReturnType<typeof getProjects>>;
+  try {
+    projects = await getProjects();
+  } catch (err) {
+    throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">

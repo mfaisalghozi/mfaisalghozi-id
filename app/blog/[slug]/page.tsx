@@ -3,29 +3,60 @@ import { notFound } from "next/navigation";
 
 import {
   estimateReadTime,
-  formatDate,
+  getBlogPosts,
   getPostBySlug,
   getPostBlocks,
   type NotionBlock,
   type NotionRichTextItem,
 } from "@/lib/notion";
 import BackButton from "@/components/back-button";
+import { TagPill } from "@/components/tag-pill";
+import { DateLink } from "@/components/date-link";
 
 export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
+
+  const title = `${post.title} | mfaisalghozi`;
+  const url = `https://mfaisalghozi.id/blog/${slug}`;
+
   return {
-    title: `${post.title} | mfaisalghozi`,
+    title,
     description: post.summary,
+    openGraph: {
+      title,
+      description: post.summary,
+      url,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: ["Muhammad Faisal Ghozi"],
+      siteName: "mfaisalghozi",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: post.summary,
+      images: ["/opengraph-image"],
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 
 function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
   return items.map((item, i) => {
     let node: React.ReactNode = item.plain_text;
+    const isHighlighted = item.annotations?.color?.endsWith("_background");
 
     if (item.annotations?.code) {
       node = (
@@ -37,11 +68,32 @@ function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
         </code>
       );
     } else if (item.annotations?.bold) {
-      node = <strong key={i}>{node}</strong>;
+      node = (
+        <strong
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </strong>
+      );
     } else if (item.annotations?.italic) {
-      node = <em key={i}>{node}</em>;
+      node = (
+        <em
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </em>
+      );
     } else {
-      node = <span key={i}>{node}</span>;
+      node = (
+        <span
+          key={i}
+          className={isHighlighted ? "rounded px-1 py-0.5 bg-[color:var(--highlight-bg)] text-[color:var(--highlight-text)]" : undefined}
+        >
+          {node}
+        </span>
+      );
     }
 
     if (item.href) {
@@ -179,7 +231,6 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
               width={800}
               height={450}
               className="w-full object-cover"
-              unoptimized
             />
           </div>
           {caption && (
@@ -238,33 +289,24 @@ function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
   return result;
 }
 
-function CalendarIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+
+  let post: Awaited<ReturnType<typeof getPostBySlug>>;
+  try {
+    post = await getPostBySlug(slug);
+  } catch (err) {
+    throw new Error(`Failed to load blog post: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!post) notFound();
 
-  const blocks = await getPostBlocks(post.id);
+  let blocks: Awaited<ReturnType<typeof getPostBlocks>>;
+  try {
+    blocks = await getPostBlocks(post.id);
+  } catch (err) {
+    throw new Error(`Failed to load blog post content: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   const blocksText = blocks
     .flatMap((b) => {
@@ -283,20 +325,47 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .join(" ");
   const readTime = estimateReadTime(blocksText);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.summary,
+    datePublished: post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: "Muhammad Faisal Ghozi",
+      url: "https://mfaisalghozi.id",
+    },
+    url: `https://mfaisalghozi.id/blog/${post.slug}`,
+    publisher: {
+      "@type": "Person",
+      name: "Muhammad Faisal Ghozi",
+      url: "https://mfaisalghozi.id",
+    },
+  };
+
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <BackButton />
 
       <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}
       </h1>
 
-      <div className="mt-4 flex items-center gap-4 text-sm text-[color:var(--muted)]">
-        <span className="flex items-center gap-1.5">
-          <CalendarIcon />
-          {formatDate(post.publishedAt)}
-        </span>
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[color:var(--muted)]">
+        <DateLink publishedAt={post.publishedAt} />
         <span>{readTime}</span>
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {post.tags.map((tag) => (
+              <TagPill key={tag} tag={tag} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8">{groupListItems(blocks)}</div>

@@ -1,70 +1,36 @@
 import Link from "next/link";
 
 import { getProjects } from "@/lib/projects";
+import { GithubIcon, ExternalLinkIcon, ArrowLeftIcon } from "@/components/icons";
 
 export const revalidate = 1800;
 
 export const metadata = {
   title: "Projects | mfaisalghozi",
   description: "Selected product and engineering projects.",
+  openGraph: {
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    url: "https://mfaisalghozi.id/projects",
+    siteName: "mfaisalghozi",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Projects | mfaisalghozi",
+    description: "Selected product and engineering projects.",
+    images: ["/opengraph-image"],
+  },
 };
 
-function GithubIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  let projects: Awaited<ReturnType<typeof getProjects>>;
+  try {
+    projects = await getProjects();
+  } catch (err) {
+    throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
@@ -90,8 +56,8 @@ export default async function ProjectsPage() {
                 {project.name}
               </h2>
               <div className="flex shrink-0 items-center gap-2 text-[color:var(--muted)]">
-                {project.githubUrl && <GithubIcon />}
-                {project.liveUrl && <ExternalLinkIcon />}
+                {project.githubUrl && <GithubIcon size={15} />}
+                {project.liveUrl && <ExternalLinkIcon size={15} />}
               </div>
             </div>
 

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { getProjectBySlug, getProjects } from "@/lib/projects";
@@ -64,7 +65,9 @@ export default async function ProjectDetailPage({
 
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
-      <BackButton defaultHref="/projects" defaultLabel="Back to projects" />
+      <Suspense fallback={null}>
+        <BackButton defaultHref="/projects" defaultLabel="Back to projects" />
+      </Suspense>
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-3">

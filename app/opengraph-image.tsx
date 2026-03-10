@@ -7,8 +7,13 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default function OgImage() {
-  const iconData = readFileSync(join(process.cwd(), "app/icon.png"));
-  const iconSrc = `data:image/png;base64,${iconData.toString("base64")}`;
+  let iconSrc: string | null = null;
+  try {
+    const iconData = readFileSync(join(process.cwd(), "app/icon.png"));
+    iconSrc = `data:image/png;base64,${iconData.toString("base64")}`;
+  } catch {
+    // icon.png not found — render OG image without the avatar
+  }
 
   return new ImageResponse(
     (
@@ -25,14 +30,16 @@ export default function OgImage() {
           gap: "60px",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={iconSrc}
-          width={220}
-          height={220}
-          style={{ borderRadius: "50%" }}
-          alt="mfaisalghozi"
-        />
+        {iconSrc && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={iconSrc}
+            width={220}
+            height={220}
+            style={{ borderRadius: "50%" }}
+            alt="mfaisalghozi"
+          />
+        )}
         <div
           style={{
             display: "flex",

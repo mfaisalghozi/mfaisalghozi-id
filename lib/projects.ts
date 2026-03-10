@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getProjectsFromNotion } from "./notion";
 
 export type { Project } from "./notion";
@@ -159,14 +160,14 @@ const STATIC_PROJECTS: import("./notion").Project[] = [
   },
 ];
 
-export async function getProjects(): Promise<import("./notion").Project[]> {
+export const getProjects = cache(async function getProjects(): Promise<import("./notion").Project[]> {
   try {
     const notionProjects = await getProjectsFromNotion();
     return notionProjects ?? STATIC_PROJECTS;
   } catch (err) {
     throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
   }
-}
+});
 
 export async function getProjectBySlug(slug: string): Promise<import("./notion").Project | null> {
   try {

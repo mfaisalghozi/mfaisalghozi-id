@@ -35,7 +35,7 @@ function safeWriteTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
     const nextTheme = safeReadTheme() ?? getSystemTheme();
@@ -56,8 +56,9 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--line)] text-base text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface)]"
       aria-label="Toggle theme"
+      suppressHydrationWarning
     >
-      {theme === "dark" ? "☾" : "☀"}
+      {theme === null ? null : theme === "dark" ? "☾" : "☀"}
     </button>
   );
 }

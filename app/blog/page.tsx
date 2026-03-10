@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getBlogPosts } from "@/lib/notion";
+import { ArrowLeftIcon } from "@/components/icons";
 import { PostCard } from "@/components/post-card";
 
 export const revalidate = 1800;
@@ -25,24 +26,6 @@ export const metadata = {
     images: ["/opengraph-image"],
   },
 };
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
 
 export default async function BlogPage() {
   let posts: Awaited<ReturnType<typeof getBlogPosts>>;

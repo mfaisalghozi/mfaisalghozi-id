@@ -9,8 +9,8 @@ const PET_HEIGHT = 44;
 const CONTAINER_HEIGHT = PET_HEIGHT + 12;
 const MARGIN = 8;
 const TICK_MS = 16;
-const WALK_SPEED = 0.9; // px per tick
-const CHASE_SPEED = 1.8;
+const WALK_SPEED = 0.4; // px per 16ms tick → ~24px/s
+const CHASE_SPEED = 0.85; // px per 16ms tick → ~51px/s
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type PetState = "walk" | "idle" | "sit" | "eat" | "chase" | "play" | "sleep";
@@ -202,8 +202,14 @@ function DogSVG({ state, blinking }: DogSVGProps) {
       viewBox="0 0 64 64"
       fill="none"
       aria-hidden="true"
-      animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
-      transition={isPlaying ? { duration: 0.4, repeat: Infinity, ease: "easeInOut" } : {}}
+      animate={isPlaying ? { y: [0, -8, 0] } : isWalking ? { y: [0, -2, 0] } : { y: 0 }}
+      transition={
+        isPlaying
+          ? { duration: 0.4, repeat: Infinity, ease: "easeInOut" }
+          : isWalking
+          ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" }
+          : {}
+      }
     >
       {/* TAIL */}
       <motion.path
@@ -232,18 +238,18 @@ function DogSVG({ state, blinking }: DogSVGProps) {
 
       {/* BACK LEGS */}
       {!isSitting && (
-        <motion.g
-          style={{ transformOrigin: "22px 46px" }}
-          animate={isWalking ? { rotate: [10, -10] } : { rotate: 0 }}
-          transition={
-            isWalking
-              ? { duration: 0.25, repeat: Infinity, repeatType: "mirror", ease: "easeInOut", delay: 0.125 }
-              : { duration: 0.15 }
-          }
-        >
-          <rect x="14" y="44" width="7" height="11" rx="3.5" fill="#B87D3A" />
-          <rect x="22" y="44" width="7" height="11" rx="3.5" fill="#B87D3A" />
-        </motion.g>
+        <>
+          <motion.rect
+            x="14" y="44" width="7" height="11" rx="3.5" fill="#B87D3A"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
+          />
+          <motion.rect
+            x="22" y="44" width="7" height="11" rx="3.5" fill="#B87D3A"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut", delay: 0.225 } : { duration: 0.15 }}
+          />
+        </>
       )}
 
       {/* SITTING BACK LEGS */}
@@ -284,18 +290,18 @@ function DogSVG({ state, blinking }: DogSVGProps) {
 
       {/* FRONT LEGS */}
       {!isSitting && (
-        <motion.g
-          style={{ transformOrigin: "40px 46px" }}
-          animate={isWalking ? { rotate: [-10, 10] } : { rotate: 0 }}
-          transition={
-            isWalking
-              ? { duration: 0.25, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }
-              : { duration: 0.15 }
-          }
-        >
-          <rect x="36" y="44" width="7" height="11" rx="3.5" fill="#B87D3A" />
-          <rect x="44" y="44" width="7" height="11" rx="3.5" fill="#B87D3A" />
-        </motion.g>
+        <>
+          <motion.rect
+            x="36" y="44" width="7" height="11" rx="3.5" fill="#B87D3A"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut", delay: 0.225 } : { duration: 0.15 }}
+          />
+          <motion.rect
+            x="44" y="44" width="7" height="11" rx="3.5" fill="#B87D3A"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
+          />
+        </>
       )}
 
       {isSleeping && <ZzzParticles />}
@@ -325,8 +331,14 @@ function CatSVG({ state, blinking }: CatSVGProps) {
       viewBox="0 0 64 64"
       fill="none"
       aria-hidden="true"
-      animate={isPlaying ? { y: [0, -10, 0] } : { y: 0 }}
-      transition={isPlaying ? { duration: 0.35, repeat: Infinity, ease: "easeInOut" } : {}}
+      animate={isPlaying ? { y: [0, -10, 0] } : isWalking ? { y: [0, -2, 0] } : { y: 0 }}
+      transition={
+        isPlaying
+          ? { duration: 0.35, repeat: Infinity, ease: "easeInOut" }
+          : isWalking
+          ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" }
+          : {}
+      }
     >
       {/* TAIL */}
       <motion.path
@@ -359,18 +371,18 @@ function CatSVG({ state, blinking }: CatSVGProps) {
 
       {/* BACK LEGS */}
       {!isSitting && (
-        <motion.g
-          style={{ transformOrigin: "21px 46px" }}
-          animate={isWalking ? { rotate: [10, -10] } : { rotate: 0 }}
-          transition={
-            isWalking
-              ? { duration: 0.28, repeat: Infinity, repeatType: "mirror", ease: "easeInOut", delay: 0.14 }
-              : { duration: 0.15 }
-          }
-        >
-          <rect x="14" y="44" width="6" height="11" rx="3" fill="#7A8496" />
-          <rect x="21" y="44" width="6" height="11" rx="3" fill="#7A8496" />
-        </motion.g>
+        <>
+          <motion.rect
+            x="14" y="44" width="6" height="11" rx="3" fill="#7A8496"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
+          />
+          <motion.rect
+            x="21" y="44" width="6" height="11" rx="3" fill="#7A8496"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut", delay: 0.225 } : { duration: 0.15 }}
+          />
+        </>
       )}
 
       {/* SITTING BACK LEGS */}
@@ -427,18 +439,18 @@ function CatSVG({ state, blinking }: CatSVGProps) {
 
       {/* FRONT LEGS */}
       {!isSitting && (
-        <motion.g
-          style={{ transformOrigin: "38px 46px" }}
-          animate={isWalking ? { rotate: [-10, 10] } : { rotate: 0 }}
-          transition={
-            isWalking
-              ? { duration: 0.28, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }
-              : { duration: 0.15 }
-          }
-        >
-          <rect x="34" y="44" width="6" height="11" rx="3" fill="#7A8496" />
-          <rect x="41" y="44" width="6" height="11" rx="3" fill="#7A8496" />
-        </motion.g>
+        <>
+          <motion.rect
+            x="34" y="44" width="6" height="11" rx="3" fill="#7A8496"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut", delay: 0.225 } : { duration: 0.15 }}
+          />
+          <motion.rect
+            x="41" y="44" width="6" height="11" rx="3" fill="#7A8496"
+            animate={isWalking ? { y: [44, 40, 44] } : { y: 44 }}
+            transition={isWalking ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
+          />
+        </>
       )}
 
       {isSleeping && <ZzzParticles />}
@@ -534,9 +546,9 @@ export function FooterPets() {
           const otherX = otherRef.current.x;
           const dist = otherX - x;
           const sign = Math.sign(dist) as Direction;
-          targetX = x + sign * speed * TICK_MS;
+          targetX = x + sign * speed;
         } else {
-          targetX = x + direction * speed * TICK_MS;
+          targetX = x + direction * speed;
         }
 
         const maxX = containerWidth.current - PET_WIDTH - MARGIN;

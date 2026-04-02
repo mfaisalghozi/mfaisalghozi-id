@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { SiteHeader } from "@/components/site-header";
 import { MobileNav } from "@/components/mobile-nav";
+import { FooterPets } from "@/components/footer-pets";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -61,6 +62,7 @@ export default function RootLayout({
         <div className="app-shell">
           <SiteHeader />
           <main className="pb-20 sm:pb-0">{children}</main>
+          <FooterPets />
           <footer className="mb-20 border-t border-[color:var(--line)] py-6 text-center text-sm text-[color:var(--muted)] sm:mb-0">
             © 2026 All rights reserved.
           </footer>

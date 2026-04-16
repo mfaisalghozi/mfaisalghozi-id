@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Theme = "light" | "dark";
 
@@ -35,13 +35,12 @@ function safeWriteTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme | null>(null);
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme | null>(() => {
+    if (typeof window === "undefined") return null;
     const nextTheme = safeReadTheme() ?? getSystemTheme();
-    setTheme(nextTheme);
     applyTheme(nextTheme);
-  }, []);
+    return nextTheme;
+  });
 
   function toggleTheme() {
     const nextTheme: Theme = theme === "light" ? "dark" : "light";

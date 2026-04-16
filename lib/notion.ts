@@ -1,6 +1,14 @@
 import { cache } from "react";
 
 const NOTION_VERSION = "2022-06-28";
+const FETCH_TIMEOUT_MS = 5000;
+const MAX_BLOCK_DEPTH = 5;
+
+function fetchWithTimeout(url: string, options: RequestInit & { next?: { revalidate: number } }, ms = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 export type BlogPost = {
   id: string;
@@ -633,7 +641,7 @@ export const getBlogPosts = cache(async function getBlogPosts(): Promise<BlogPos
 
   let response: Response;
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `https://api.notion.com/v1/databases/${notionDatabaseId}/query`,
       {
         method: "POST",
@@ -788,7 +796,7 @@ export const getProjectsFromNotion = cache(async function getProjectsFromNotion(
 
   let response: Response;
   try {
-    response = await fetch(
+    response = await fetchWithTimeout(
       `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
       {
         method: "POST",
@@ -820,10 +828,12 @@ export const getProjectsFromNotion = cache(async function getProjectsFromNotion(
 
 // ── Blog post blocks ──────────────────────────────────────────────────────────
 
-async function fetchBlocksRecursively(blockId: string, apiKey: string): Promise<NotionBlock[]> {
+async function fetchBlocksRecursively(blockId: string, apiKey: string, depth = 0): Promise<NotionBlock[]> {
+  if (depth >= MAX_BLOCK_DEPTH) return [];
+
   let response: Response;
   try {
-    response = await fetch(`https://api.notion.com/v1/blocks/${blockId}/children`, {
+    response = await fetchWithTimeout(`https://api.notion.com/v1/blocks/${blockId}/children`, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Notion-Version": NOTION_VERSION,
@@ -850,7 +860,7 @@ async function fetchBlocksRecursively(blockId: string, apiKey: string): Promise<
     blocks
       .filter((b) => b.has_children)
       .map(async (b) => {
-        b.children = await fetchBlocksRecursively(b.id, apiKey);
+        b.children = await fetchBlocksRecursively(b.id, apiKey, depth + 1);
       }),
   );
 

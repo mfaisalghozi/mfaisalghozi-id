@@ -228,8 +228,9 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
             <Image
               src={src}
               alt={caption || "Blog image"}
-              width={800}
-              height={450}
+              width={1200}
+              height={675}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 800px"
               className="w-full object-cover"
             />
           </div>

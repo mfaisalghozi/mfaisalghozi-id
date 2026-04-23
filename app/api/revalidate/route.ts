@@ -6,9 +6,11 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const secret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
-  const expected = process.env.REVALIDATE_SECRET ?? "";
+  const expected = process.env.REVALIDATE_SECRET;
   const isValid =
     secret !== null &&
+    expected !== undefined &&
+    expected.length > 0 &&
     secret.length === expected.length &&
     timingSafeEqual(Buffer.from(secret), Buffer.from(expected));
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getBlogPostsByMonth, formatMonth, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
@@ -35,6 +36,11 @@ function ArrowLeftIcon() {
 
 export default async function MonthPage({ params }: { params: Promise<{ month: string }> }) {
   const { month } = await params;
+
+  if (!/^\d{4}-\d{2}$/.test(month)) {
+    notFound();
+  }
+
   const posts = await getBlogPostsByMonth(month);
   const monthLabel = formatMonth(`${month}-01`);
 

@@ -11,7 +11,9 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(error);
+    }
   }, [error]);
 
   return (
@@ -19,7 +21,9 @@ export default function ErrorPage({
       <p className="text-sm font-medium text-[color:var(--accent)]">Something went wrong</p>
       <h1 className="mt-3 text-3xl font-bold text-[color:var(--text)]">An error occurred</h1>
       <p className="mt-4 text-sm leading-relaxed text-[color:var(--muted)]">
-        {error.message || "An unexpected error occurred. Please try again later."}
+        {process.env.NODE_ENV === "development"
+          ? error.message
+          : "An unexpected error occurred. Please try again later."}
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button

@@ -39,6 +39,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+function isSafeUrl(url: string | undefined): url is string {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 const statusColors: Record<string, string> = {
   Live: "bg-emerald-500/10 text-emerald-500",
   "Open Source": "bg-blue-500/10 text-blue-400",
@@ -108,11 +118,11 @@ export default async function ProjectDetailPage({
         </div>
       </section>
 
-      {(project.githubUrl || project.liveUrl) && (
+      {(isSafeUrl(project.githubUrl) || isSafeUrl(project.liveUrl)) && (
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-[color:var(--text)]">Links</h2>
           <div className="mt-4 flex flex-wrap gap-3">
-            {project.githubUrl && (
+            {isSafeUrl(project.githubUrl) && (
               <a
                 href={project.githubUrl}
                 target="_blank"
@@ -123,7 +133,7 @@ export default async function ProjectDetailPage({
                 View on GitHub
               </a>
             )}
-            {project.liveUrl && (
+            {isSafeUrl(project.liveUrl) && (
               <a
                 href={project.liveUrl}
                 target="_blank"

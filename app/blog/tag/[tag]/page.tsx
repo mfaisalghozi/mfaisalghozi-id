@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
@@ -34,10 +35,15 @@ function ArrowLeftIcon() {
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
+  const decodedTag = decodeURIComponent(tag);
+
+  if (decodedTag.length > 50 || !/^[\w\s\-.]+$/.test(decodedTag)) {
+    notFound();
+  }
 
   let posts: Awaited<ReturnType<typeof getBlogPostsByTag>>;
   try {
-    posts = await getBlogPostsByTag(decodeURIComponent(tag));
+    posts = await getBlogPostsByTag(decodedTag);
   } catch (err) {
     throw new Error(`Failed to load posts for tag "${tag}": ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -53,10 +59,10 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
       </Link>
 
       <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">
-        <span className="text-[color:var(--accent)]">#{tag}</span>
+        <span className="text-[color:var(--accent)]">#{decodedTag}</span>
       </h1>
       <p className="mt-2 text-[color:var(--muted)]">
-        {posts.length} {posts.length === 1 ? "post" : "posts"} tagged with &ldquo;{tag}&rdquo;
+        {posts.length} {posts.length === 1 ? "post" : "posts"} tagged with &ldquo;{decodedTag}&rdquo;
       </p>
 
       {posts.length === 0 ? (

@@ -97,17 +97,29 @@ function renderRichText(items: NotionRichTextItem[]): React.ReactNode {
     }
 
     if (item.href) {
-      return (
-        <a
-          key={i}
-          href={item.href}
-          className="underline underline-offset-2 hover:text-[color:var(--accent)]"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {node}
-        </a>
-      );
+      let safeHref: string | undefined;
+      try {
+        const parsed = new URL(item.href);
+        if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+          safeHref = item.href;
+        }
+      } catch {
+        // malformed URL — skip rendering as a link
+      }
+      if (safeHref) {
+        return (
+          <a
+            key={i}
+            href={safeHref}
+            className="underline underline-offset-2 hover:text-[color:var(--accent)]"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {node}
+          </a>
+        );
+      }
+      return node;
     }
 
     return node;

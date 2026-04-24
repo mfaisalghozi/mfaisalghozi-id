@@ -12,6 +12,8 @@ import {
   MailIcon,
 } from "@/components/icons";
 
+export const revalidate = 1800;
+
 export const metadata: Metadata = {
   title: "Muhammad Faisal Ghozi | Software Engineer",
   description:

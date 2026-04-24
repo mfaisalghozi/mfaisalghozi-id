@@ -25,9 +25,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ challenge: body.challenge });
   }
 
+  revalidatePath("/", "page");
   revalidatePath("/blog", "page");
   revalidatePath("/blog/[slug]", "page");
-  revalidatePath("/", "page");
+  revalidatePath("/blog/month/[month]", "page");
+  revalidatePath("/blog/tag/[tag]", "page");
+  revalidatePath("/projects", "page");
+  revalidatePath("/projects/[slug]", "page");
 
   return NextResponse.json({ revalidated: true });
 }

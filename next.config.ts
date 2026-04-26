@@ -17,7 +17,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' https: data: blob:",
@@ -35,12 +35,12 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "prod-files-secure.s3.us-east-1.amazonaws.com" },
-      { protocol: "https", hostname: "s3.us-east-1.amazonaws.com" },
-      { protocol: "https", hostname: "s3.us-west-2.amazonaws.com" },
-      { protocol: "https", hostname: "images.notion.so" },
-      { protocol: "https", hostname: "www.notion.so" },
-      { protocol: "https", hostname: "notion.so" },
+      // Notion file attachments — scoped to Notion's dedicated S3 bucket
+      { protocol: "https", hostname: "prod-files-secure.s3.us-east-1.amazonaws.com", pathname: "/**" },
+      // Notion-hosted images
+      { protocol: "https", hostname: "images.notion.so", pathname: "/**" },
+      { protocol: "https", hostname: "www.notion.so", pathname: "/image/**" },
+      { protocol: "https", hostname: "notion.so", pathname: "/image/**" },
     ],
   },
 };

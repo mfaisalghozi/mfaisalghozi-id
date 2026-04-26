@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "crypto";
+import { timingSafeEqual, createHash } from "crypto";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,12 +7,16 @@ export async function POST(request: NextRequest) {
   const secret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
   const expected = process.env.REVALIDATE_SECRET;
+  // Hash both values to a fixed length before comparing — avoids leaking
+  // secret length through the length pre-check that timingSafeEqual requires.
   const isValid =
     secret !== null &&
     expected !== undefined &&
     expected.length > 0 &&
-    secret.length === expected.length &&
-    timingSafeEqual(Buffer.from(secret), Buffer.from(expected));
+    timingSafeEqual(
+      createHash("sha256").update(secret).digest(),
+      createHash("sha256").update(expected).digest(),
+    );
 
   if (!isValid) {
     return NextResponse.json({ message: "Invalid secret" }, { status: 401 });

@@ -49,8 +49,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="dns-prefetch" href="https://api.notion.com" />
-        <link rel="prefetch" href="/blog" />
-        <link rel="prefetch" href="/projects" />
       </head>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <script

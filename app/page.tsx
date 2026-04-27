@@ -14,6 +14,16 @@ import {
 
 export const revalidate = 1800;
 
+function isSafeUrl(url: string | undefined): url is string {
+  if (!url) return false;
+  try {
+    const { protocol } = new URL(url);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export const metadata: Metadata = {
   title: "Muhammad Faisal Ghozi | Software Engineer",
   description:
@@ -57,7 +67,7 @@ async function RecentPosts() {
           </p>
           <div className="mt-2 flex items-center gap-3 text-xs text-[color:var(--muted)]">
             <DateLink publishedAt={post.publishedAt} />
-            <span>~{estimateReadTime(`${post.title} ${post.summary}`, 5)}</span>
+            <span>~{estimateReadTime(post.summary)}</span>
           </div>
         </article>
       ))}
@@ -99,7 +109,7 @@ async function FeaturedProjects() {
           <div className="relative z-10 flex items-start justify-between">
             <h3 className="text-sm font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)]">{project.name}</h3>
             <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
-              {project.liveUrl && (
+              {isSafeUrl(project.liveUrl) && (
                 <a
                   href={project.liveUrl}
                   target="_blank"
@@ -133,7 +143,7 @@ async function FeaturedProjects() {
 function FeaturedProjectsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
           className="rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4"

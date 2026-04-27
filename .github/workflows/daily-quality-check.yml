@@ -91,3 +91,27 @@ jobs:
         run: |
           echo "### console.log in source (potential perf/security leak)" >> $GITHUB_STEP_SUMMARY
           grep -rn 'console\.log' app/ lib/ components/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "None found — good." >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for unvalidated external URLs used as href
+        run: |
+          echo "### Unvalidated external URL hrefs (should use isSafeUrl guard)" >> $GITHUB_STEP_SUMMARY
+          # Flag any href={...Url} patterns not wrapped in isSafeUrl()
+          if grep -rn 'href={[^}]*Url}' app/ components/ 2>/dev/null | grep -v 'isSafeUrl'; then
+            echo "WARNING: Found potentially unvalidated URL hrefs above." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "None found — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check CSP for unsafe-inline in script-src
+        run: |
+          echo "### CSP unsafe-inline check" >> $GITHUB_STEP_SUMMARY
+          if grep -n "'unsafe-inline'" next.config.ts 2>/dev/null | grep 'script-src'; then
+            echo "WARNING: script-src contains 'unsafe-inline' — consider nonce-based CSP." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No unsafe-inline in script-src — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for missing rel=noopener on target=_blank links
+        run: |
+          echo "### target=_blank without rel=noopener noreferrer" >> $GITHUB_STEP_SUMMARY
+          grep -rn 'target="_blank"' app/ components/ 2>/dev/null | grep -v 'noopener' >> $GITHUB_STEP_SUMMARY || echo "All _blank links have noopener — good." >> $GITHUB_STEP_SUMMARY

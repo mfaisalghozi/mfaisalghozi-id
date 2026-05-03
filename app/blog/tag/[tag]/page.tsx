@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
+import { getBlogPosts, getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
 import { DateLink } from "@/components/date-link";
+import { ArrowLeftIcon } from "@/components/icons";
 
 export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  const tags = [...new Set(posts.flatMap((post) => post.tags))];
+  return tags.map((tag) => ({ tag: encodeURIComponent(tag) }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
@@ -13,24 +20,6 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
     title: `#${tag} | mfaisalghozi Blog`,
     description: `Blog posts tagged with "${tag}".`,
   };
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
 }
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {

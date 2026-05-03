@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 import { getBlogPosts } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
 
+export const revalidate = 1800;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
 

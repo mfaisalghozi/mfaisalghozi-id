@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getBlogPostsByMonth, formatMonth, estimateReadTime } from "@/lib/notion";
+import { getBlogPosts, getBlogPostsByMonth, formatMonth, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
 import { DateLink } from "@/components/date-link";
+import { ArrowLeftIcon } from "@/components/icons";
 
 export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  const months = [...new Set(posts.map((post) => post.publishedAt.slice(0, 7)).filter(Boolean))];
+  return months.map((month) => ({ month }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ month: string }> }) {
   const { month } = await params;
@@ -14,24 +21,6 @@ export async function generateMetadata({ params }: { params: Promise<{ month: st
     title: `${monthLabel} | mfaisalghozi Blog`,
     description: `Blog posts from ${monthLabel}.`,
   };
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
 }
 
 export default async function MonthPage({ params }: { params: Promise<{ month: string }> }) {

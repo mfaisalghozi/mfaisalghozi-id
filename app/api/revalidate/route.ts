@@ -3,6 +3,11 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
+  const contentLength = parseInt(request.headers.get("content-length") ?? "0", 10);
+  if (contentLength > 10_000) {
+    return NextResponse.json({ message: "Request too large" }, { status: 413 });
+  }
+
   const authHeader = request.headers.get("authorization");
   const secret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 

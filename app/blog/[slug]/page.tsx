@@ -134,7 +134,7 @@ function BlockChildren({ blocks }: { blocks: NotionBlock[] }) {
   );
 }
 
-function BlockRenderer({ block }: { block: NotionBlock }) {
+function BlockRenderer({ block, priority = false }: { block: NotionBlock; priority?: boolean }) {
   const children =
     block.children && block.children.length > 0 ? (
       <BlockChildren blocks={block.children} />
@@ -244,6 +244,7 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
               height={675}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 800px"
               className="w-full object-cover"
+              priority={priority}
             />
           </div>
           {caption && (
@@ -260,9 +261,10 @@ function BlockRenderer({ block }: { block: NotionBlock }) {
   }
 }
 
-function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
+function groupListItems(blocks: NotionBlock[], firstImagePriority = false): React.ReactNode[] {
   const result: React.ReactNode[] = [];
   let i = 0;
+  let firstImageSeen = false;
 
   while (i < blocks.length) {
     const block = blocks[i];
@@ -294,7 +296,9 @@ function groupListItems(blocks: NotionBlock[]): React.ReactNode[] {
         </ol>,
       );
     } else {
-      result.push(<BlockRenderer key={block.id} block={block} />);
+      const isFirstImage = firstImagePriority && block.type === "image" && !firstImageSeen;
+      if (block.type === "image") firstImageSeen = true;
+      result.push(<BlockRenderer key={block.id} block={block} priority={isFirstImage} />);
       i++;
     }
   }
@@ -381,7 +385,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
       </div>
 
-      <div className="mt-8">{groupListItems(blocks)}</div>
+      <div className="mt-8">{groupListItems(blocks, true)}</div>
 
     </article>
   );

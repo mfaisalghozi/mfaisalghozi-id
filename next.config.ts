@@ -25,7 +25,7 @@ const securityHeaders = [
     ].join("; "),
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-  { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+  { key: "Cross-Origin-Resource-Policy", value: "same-site" },
 ];
 
 const nextConfig: NextConfig = {

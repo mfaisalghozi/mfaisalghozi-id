@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-const personJsonLd = {
+const personJsonLdString = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Person",
   name: "Muhammad Faisal Ghozi",
@@ -45,7 +45,7 @@ const personJsonLd = {
     "https://github.com/mfaisalghozi",
     "https://linkedin.com/in/mfaisalghozi",
   ],
-};
+}).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
 
 async function RecentPosts() {
   const allPosts = await getBlogPosts();
@@ -166,7 +166,7 @@ export default function HomePage() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026") }}
+        dangerouslySetInnerHTML={{ __html: personJsonLdString }}
       />
       {/* Hero */}
       <section className="mb-10 sm:mb-16">

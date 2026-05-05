@@ -6,6 +6,7 @@ on:
   workflow_dispatch: # allow manual runs
 
 jobs:
+  # ── 1. Security audit ────────────────────────────────────────────────────────
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -25,9 +26,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Dependency vulnerability audit
-        # continue so the rest of the checks still run; the summary will show the issues
-        run: pnpm audit --audit-level=moderate
-        continue-on-error: true
+        run: |
+          echo "### Dependency vulnerability audit" >> $GITHUB_STEP_SUMMARY
+          pnpm audit --audit-level=moderate 2>&1 | tee /tmp/audit.txt >> $GITHUB_STEP_SUMMARY || true
+          if grep -q "found 0 vulnerabilities" /tmp/audit.txt; then
+            echo "No vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Lint
         run: pnpm lint
@@ -35,6 +39,59 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+      - name: Check for hardcoded secrets patterns
+        run: |
+          echo "### Hardcoded secret patterns" >> $GITHUB_STEP_SUMMARY
+          # Look for common patterns like bare API keys or tokens in source files
+          if grep -rn --include="*.ts" --include="*.tsx" \
+            -E "(notion_secret_|secret_|sk-|Bearer [a-zA-Z0-9]{20,})" \
+            app/ lib/ components/ 2>/dev/null \
+            | grep -v "process\.env" | grep -v "//"; then
+            echo "WARNING: Possible hardcoded credentials found above." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No hardcoded credential patterns detected." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check Cross-Origin-Resource-Policy is not overly permissive
+        run: |
+          echo "### Cross-Origin-Resource-Policy check" >> $GITHUB_STEP_SUMMARY
+          if grep -n "Cross-Origin-Resource-Policy" next.config.ts | grep -q "cross-origin"; then
+            echo "WARNING: CORP is set to 'cross-origin' — consider 'same-site' for a personal site." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "CORP header is same-site or same-origin — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check CSP for unsafe-inline in script-src
+        run: |
+          echo "### CSP script-src unsafe-inline" >> $GITHUB_STEP_SUMMARY
+          if grep -n "'unsafe-inline'" next.config.ts 2>/dev/null | grep "script-src"; then
+            echo "NOTE: script-src contains 'unsafe-inline' (needed for inline theme init script). Track for nonce-based CSP migration." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No unsafe-inline in script-src." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for missing rel=noopener on target=_blank links
+        run: |
+          echo "### target=_blank without rel=noopener noreferrer" >> $GITHUB_STEP_SUMMARY
+          if grep -rn 'target="_blank"' app/ components/ 2>/dev/null | grep -v "noopener"; then
+            echo "WARNING: Found target=_blank links without noopener above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "All _blank links have noopener noreferrer — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for unvalidated external URLs used as href
+        run: |
+          echo "### Unvalidated external URL hrefs" >> $GITHUB_STEP_SUMMARY
+          if grep -rn 'href={[^}]*Url}' app/ components/ 2>/dev/null | grep -v "isSafeUrl"; then
+            echo "WARNING: Found potentially unvalidated URL hrefs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "All external URL hrefs are guarded by isSafeUrl — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ── 2. Build & bundle ────────────────────────────────────────────────────────
   build:
     name: Build Check
     runs-on: ubuntu-latest
@@ -63,9 +120,13 @@ jobs:
 
       - name: Report bundle sizes
         run: |
-          echo "### Build output sizes" >> $GITHUB_STEP_SUMMARY
-          du -sh .next/static/chunks/*.js 2>/dev/null | sort -h | tail -20 >> $GITHUB_STEP_SUMMARY || true
+          echo "### Build output chunk sizes" >> $GITHUB_STEP_SUMMARY
+          du -sh .next/static/chunks/*.js 2>/dev/null | sort -h | tail -20 >> $GITHUB_STEP_SUMMARY || echo "No chunks found." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Total .next size" >> $GITHUB_STEP_SUMMARY
+          du -sh .next/ >> $GITHUB_STEP_SUMMARY
 
+  # ── 3. Performance hints ─────────────────────────────────────────────────────
   performance:
     name: Performance Hints
     runs-on: ubuntu-latest
@@ -75,43 +136,134 @@ jobs:
       - name: Check for large static assets
         run: |
           echo "### Large files (>100 KB) in public/" >> $GITHUB_STEP_SUMMARY
-          find public -type f -size +100k -exec du -sh {} \; 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "None found." >> $GITHUB_STEP_SUMMARY
-
-      - name: Check for missing next/image usage
-        run: |
-          echo "### Raw <img> tags (should use next/image)" >> $GITHUB_STEP_SUMMARY
-          grep -rn '<img ' app/ components/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "None found — good." >> $GITHUB_STEP_SUMMARY
-
-      - name: Check Notion revalidation window
-        run: |
-          echo "### ISR revalidation windows" >> $GITHUB_STEP_SUMMARY
-          grep -rn 'revalidate' app/ lib/ --include="*.ts" --include="*.tsx" >> $GITHUB_STEP_SUMMARY || true
-
-      - name: Check for console.log left in source
-        run: |
-          echo "### console.log in source (potential perf/security leak)" >> $GITHUB_STEP_SUMMARY
-          grep -rn 'console\.log' app/ lib/ components/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "None found — good." >> $GITHUB_STEP_SUMMARY
-
-      - name: Check for unvalidated external URLs used as href
-        run: |
-          echo "### Unvalidated external URL hrefs (should use isSafeUrl guard)" >> $GITHUB_STEP_SUMMARY
-          # Flag any href={...Url} patterns not wrapped in isSafeUrl()
-          if grep -rn 'href={[^}]*Url}' app/ components/ 2>/dev/null | grep -v 'isSafeUrl'; then
-            echo "WARNING: Found potentially unvalidated URL hrefs above." >> $GITHUB_STEP_SUMMARY
+          LARGE=$(find public -type f -size +100k 2>/dev/null)
+          if [ -n "$LARGE" ]; then
+            echo "$LARGE" | xargs du -sh >> $GITHUB_STEP_SUMMARY
+            echo "WARNING: Large assets found. Consider compressing or using next/image." >> $GITHUB_STEP_SUMMARY
           else
             echo "None found — good." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Check CSP for unsafe-inline in script-src
+      - name: Check for raw <img> tags (should use next/image)
         run: |
-          echo "### CSP unsafe-inline check" >> $GITHUB_STEP_SUMMARY
-          if grep -n "'unsafe-inline'" next.config.ts 2>/dev/null | grep 'script-src'; then
-            echo "WARNING: script-src contains 'unsafe-inline' — consider nonce-based CSP." >> $GITHUB_STEP_SUMMARY
+          echo "### Raw <img> tags (should use next/image)" >> $GITHUB_STEP_SUMMARY
+          if grep -rn '<img ' app/ components/ 2>/dev/null; then
+            echo "WARNING: Raw <img> found — migrate to next/image for optimization." >> $GITHUB_STEP_SUMMARY
+            exit 1
           else
-            echo "No unsafe-inline in script-src — good." >> $GITHUB_STEP_SUMMARY
+            echo "None found — good." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Check for missing rel=noopener on target=_blank links
+      - name: Check for missing priority on blog images
         run: |
-          echo "### target=_blank without rel=noopener noreferrer" >> $GITHUB_STEP_SUMMARY
-          grep -rn 'target="_blank"' app/ components/ 2>/dev/null | grep -v 'noopener' >> $GITHUB_STEP_SUMMARY || echo "All _blank links have noopener — good." >> $GITHUB_STEP_SUMMARY
+          echo "### Blog image priority prop" >> $GITHUB_STEP_SUMMARY
+          # Verify groupListItems still passes firstImagePriority
+          if grep -n "groupListItems(blocks, true)" app/blog/\[slug\]/page.tsx 2>/dev/null; then
+            echo "First blog image has priority=true for LCP — good." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "WARNING: groupListItems not called with firstImagePriority=true. LCP may regress." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check Notion revalidation windows
+        run: |
+          echo "### ISR revalidation windows" >> $GITHUB_STEP_SUMMARY
+          grep -rn 'revalidate' app/ lib/ --include="*.ts" --include="*.tsx" >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          # Warn if any window is under 60s (too aggressive for Notion rate limits)
+          if grep -rn 'revalidate.*[0-9]' app/ lib/ --include="*.ts" --include="*.tsx" \
+            | grep -E 'revalidate.*\b([1-9]|[1-5][0-9])\b' 2>/dev/null; then
+            echo "WARNING: Revalidation window under 60s detected — verify this is intentional." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for console.log left in source
+        run: |
+          echo "### console.log in source" >> $GITHUB_STEP_SUMMARY
+          if grep -rn 'console\.log' app/ lib/ components/ 2>/dev/null; then
+            echo "WARNING: console.log found — remove before production." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "None found — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for cache-busting ?from= params in internal links
+        run: |
+          echo "### Internal links with ?from= tracking params" >> $GITHUB_STEP_SUMMARY
+          if grep -rn '?from=' app/ components/ 2>/dev/null; then
+            echo "NOTE: ?from= params found in internal links. These create separate router-cache entries and prevent Next.js prefetch sharing." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No ?from= params in internal links — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check personJsonLd is pre-serialized (not inlined in JSX)
+        run: |
+          echo "### JSON-LD serialization efficiency" >> $GITHUB_STEP_SUMMARY
+          if grep -n "JSON.stringify(personJson" app/page.tsx 2>/dev/null; then
+            echo "WARNING: personJsonLd is being serialized inside JSX on every render. Move to module-level const." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "personJsonLd is pre-serialized at module level — good." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ── 4. Dependency freshness ───────────────────────────────────────────────────
+  deps:
+    name: Dependency Freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for outdated packages
+        run: |
+          echo "### Outdated packages" >> $GITHUB_STEP_SUMMARY
+          pnpm outdated 2>&1 >> $GITHUB_STEP_SUMMARY || true
+
+  # ── 5. Live site checks ───────────────────────────────────────────────────────
+  live-checks:
+    name: Live Site Headers
+    runs-on: ubuntu-latest
+    # Non-blocking — site may be under maintenance or temporarily unreachable
+    continue-on-error: true
+    steps:
+      - name: Fetch live security headers
+        run: |
+          echo "### Live site security headers (mfaisalghozi.id)" >> $GITHUB_STEP_SUMMARY
+          HEADERS=$(curl -s -I --max-time 10 https://mfaisalghozi.id 2>/dev/null) || { echo "Site unreachable." >> $GITHUB_STEP_SUMMARY; exit 0; }
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$HEADERS" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          # Spot-check critical headers
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Header spot-check" >> $GITHUB_STEP_SUMMARY
+          for header in "strict-transport-security" "x-frame-options" "x-content-type-options" "content-security-policy" "cross-origin-opener-policy"; do
+            if echo "$HEADERS" | grep -qi "$header"; then
+              echo "- ✅ $header present" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ❌ $header MISSING" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Check PageSpeed Insights scores
+        run: |
+          echo "### PageSpeed Insights (mobile)" >> $GITHUB_STEP_SUMMARY
+          RESULT=$(curl -s --max-time 60 \
+            "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://mfaisalghozi.id&strategy=mobile" 2>/dev/null) || { echo "PageSpeed API unreachable." >> $GITHUB_STEP_SUMMARY; exit 0; }
+          PERF=$(echo "$RESULT" | grep -o '"score":[0-9.]*' | head -1 | grep -o '[0-9.]*')
+          A11Y=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['accessibility']['score'])" 2>/dev/null || echo "n/a")
+          SEO=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['seo']['score'])" 2>/dev/null || echo "n/a")
+          PERF_SCORE=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['performance']['score'])" 2>/dev/null || echo "n/a")
+          echo "| Metric | Score |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | $PERF_SCORE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Accessibility | $A11Y |" >> $GITHUB_STEP_SUMMARY
+          echo "| SEO | $SEO |" >> $GITHUB_STEP_SUMMARY

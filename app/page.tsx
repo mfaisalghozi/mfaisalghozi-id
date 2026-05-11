@@ -57,7 +57,7 @@ async function RecentPosts() {
           key={post.slug}
           className="border-b border-[color:var(--line)] pb-6 last:border-0 last:pb-0"
         >
-          <Link href={`/blog/${post.slug}?from=home`}>
+          <Link href={`/blog/${post.slug}`}>
             <h3 className="font-semibold text-[color:var(--text)] transition-colors hover:text-[color:var(--accent)]">
               {post.title}
             </h3>
@@ -102,7 +102,7 @@ async function FeaturedProjects() {
           className="group relative rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4 transition-colors hover:border-[color:var(--accent)]"
         >
           <Link
-            href={`/projects/${project.slug}?from=home`}
+            href={`/projects/${project.slug}`}
             className="absolute inset-0 z-0 rounded-xl"
             aria-label={project.name}
           />

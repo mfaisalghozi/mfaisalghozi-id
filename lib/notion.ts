@@ -106,6 +106,8 @@ type NotionPage = {
 
 type NotionQueryResponse = {
   results: NotionPage[];
+  has_more: boolean;
+  next_cursor: string | null;
 };
 
 type NotionBlocksResponse = {
@@ -631,6 +633,51 @@ const SAMPLE_BLOCKS: Record<string, NotionBlock[]> = {
   ],
 };
 
+async function queryAllPages(databaseId: string, apiKey: string, errorLabel: string): Promise<NotionPage[]> {
+  const all: NotionPage[] = [];
+  let cursor: string | null = null;
+
+  do {
+    const body: Record<string, unknown> = { page_size: 100 };
+    if (cursor) body.start_cursor = cursor;
+
+    let response: Response;
+    try {
+      response = await fetchWithTimeout(
+        `https://api.notion.com/v1/databases/${databaseId}/query`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+          next: { revalidate: 1800 },
+        },
+      );
+    } catch (err) {
+      throw new Error(`Failed to connect to Notion: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to load Notion ${errorLabel}: ${response.status}`);
+    }
+
+    let payload: NotionQueryResponse;
+    try {
+      payload = (await response.json()) as NotionQueryResponse;
+    } catch {
+      throw new Error(`Failed to parse Notion ${errorLabel} response`);
+    }
+
+    all.push(...payload.results);
+    cursor = payload.has_more ? payload.next_cursor : null;
+  } while (cursor !== null);
+
+  return all;
+}
+
 export const getBlogPosts = cache(async function getBlogPosts(): Promise<BlogPost[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
   const notionDatabaseId = process.env.NOTION_DATABASE_ID;
@@ -639,37 +686,9 @@ export const getBlogPosts = cache(async function getBlogPosts(): Promise<BlogPos
     return SAMPLE_POSTS;
   }
 
-  let response: Response;
-  try {
-    response = await fetchWithTimeout(
-      `https://api.notion.com/v1/databases/${notionDatabaseId}/query`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${notionApiKey}`,
-          "Notion-Version": NOTION_VERSION,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ page_size: 20 }),
-        next: { revalidate: 1800 },
-      },
-    );
-  } catch (err) {
-    throw new Error(`Failed to connect to Notion: ${err instanceof Error ? err.message : String(err)}`);
-  }
+  const pages = await queryAllPages(notionDatabaseId, notionApiKey, "blog posts");
 
-  if (!response.ok) {
-    throw new Error(`Failed to load Notion blog posts: ${response.status}`);
-  }
-
-  let payload: NotionQueryResponse;
-  try {
-    payload = (await response.json()) as NotionQueryResponse;
-  } catch {
-    throw new Error("Failed to parse Notion blog posts response");
-  }
-
-  return payload.results
+  return pages
     .map(normalizePost)
     .filter((post) => !!post.publishedAt)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
@@ -794,36 +813,8 @@ export const getProjectsFromNotion = cache(async function getProjectsFromNotion(
     return null;
   }
 
-  let response: Response;
-  try {
-    response = await fetchWithTimeout(
-      `https://api.notion.com/v1/databases/${notionProjectsDatabaseId}/query`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${notionApiKey}`,
-          "Notion-Version": NOTION_VERSION,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ page_size: 50 }),
-        next: { revalidate: 1800 },
-      },
-    );
-  } catch (err) {
-    throw new Error(`Failed to connect to Notion: ${err instanceof Error ? err.message : String(err)}`);
-  }
-
-  if (!response.ok) {
-    throw new Error(`Failed to load Notion projects: ${response.status}`);
-  }
-
-  let payload: NotionQueryResponse;
-  try {
-    payload = (await response.json()) as NotionQueryResponse;
-  } catch {
-    throw new Error("Failed to parse Notion projects response");
-  }
-  return payload.results.map(normalizeProject);
+  const pages = await queryAllPages(notionProjectsDatabaseId, notionApiKey, "projects");
+  return pages.map(normalizeProject);
 });
 
 // ── Blog post blocks ──────────────────────────────────────────────────────────

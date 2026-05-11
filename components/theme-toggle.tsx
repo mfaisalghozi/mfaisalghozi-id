@@ -6,7 +6,6 @@ type Theme = "light" | "dark";
 
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
-  document.body.setAttribute("data-theme", theme);
   document.documentElement.style.colorScheme = theme;
 }
 

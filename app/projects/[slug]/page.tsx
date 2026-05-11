@@ -4,6 +4,8 @@ import { getProjectBySlug, getProjects } from "@/lib/projects";
 import BackButton from "@/components/back-button";
 import { GithubIcon, ExternalLinkIcon, CheckIcon } from "@/components/icons";
 
+export const revalidate = 1800;
+
 export async function generateStaticParams() {
   const projects = await getProjects();
   return projects.map((p) => ({ slug: p.slug }));

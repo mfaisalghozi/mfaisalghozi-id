@@ -47,10 +47,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="prefetch" href="/blog" />
-        <link rel="prefetch" href="/projects" />
-      </head>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <script
           dangerouslySetInnerHTML={{

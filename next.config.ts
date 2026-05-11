@@ -16,7 +16,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'sha256-jC+NRObbc9lg27Hu8DFrENYhKcq92JY6hwjoUe0dUjE='",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' https://prod-files-secure.s3.us-east-1.amazonaws.com https://images.notion.so https://www.notion.so https://notion.so data: blob:",

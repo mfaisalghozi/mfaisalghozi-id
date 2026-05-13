@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getProjectBySlug, getProjects } from "@/lib/projects";
+import { isSafeUrl } from "@/lib/utils";
 import BackButton from "@/components/back-button";
 import { GithubIcon, ExternalLinkIcon, CheckIcon } from "@/components/icons";
 
@@ -39,16 +40,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       images: ["/opengraph-image"],
     },
   };
-}
-
-function isSafeUrl(url: string | undefined): url is string {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 const statusColors: Record<string, string> = {

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { getBlogPosts, estimateReadTime } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
+import { isSafeUrl } from "@/lib/utils";
 import { DateLink } from "@/components/date-link";
 import {
   ExternalLinkIcon,
@@ -13,16 +14,6 @@ import {
 } from "@/components/icons";
 
 export const revalidate = 1800;
-
-function isSafeUrl(url: string | undefined): url is string {
-  if (!url) return false;
-  try {
-    const { protocol } = new URL(url);
-    return protocol === "http:" || protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 export const metadata: Metadata = {
   title: "Muhammad Faisal Ghozi | Software Engineer",

@@ -829,7 +829,7 @@ async function fetchBlocksRecursively(blockId: string, apiKey: string, depth = 0
         Authorization: `Bearer ${apiKey}`,
         "Notion-Version": NOTION_VERSION,
       },
-      next: { revalidate: 1800 },
+      next: { revalidate: 600 },
     });
   } catch (err) {
     throw new Error(`Failed to connect to Notion blocks API: ${err instanceof Error ? err.message : String(err)}`);

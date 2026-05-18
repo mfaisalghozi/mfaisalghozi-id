@@ -11,6 +11,7 @@ export function proxy(request: NextRequest) {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' https://prod-files-secure.s3.us-east-1.amazonaws.com https://images.notion.so https://www.notion.so https://notion.so data: blob:",
     "connect-src 'self' https://api.notion.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    "frame-src https://vercel.live",
     "frame-ancestors 'none'",
   ].join("; ");
 

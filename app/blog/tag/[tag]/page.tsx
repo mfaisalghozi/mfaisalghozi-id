@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
+import { getBlogPosts, getBlogPostsByTag, estimateReadTime } from "@/lib/notion";
 import { TagPill } from "@/components/tag-pill";
 import { DateLink } from "@/components/date-link";
+import { ArrowLeftIcon } from "@/components/icons";
 
 export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  const tags = [...new Set(posts.flatMap((post) => post.tags))];
+  return tags.map((tag) => ({ tag: encodeURIComponent(tag) }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
@@ -14,30 +22,17 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
   };
 }
 
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
-}
-
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
+  const decodedTag = decodeURIComponent(tag);
+
+  if (decodedTag.length > 50 || !/^[\w\s\-.]+$/.test(decodedTag)) {
+    notFound();
+  }
 
   let posts: Awaited<ReturnType<typeof getBlogPostsByTag>>;
   try {
-    posts = await getBlogPostsByTag(decodeURIComponent(tag));
+    posts = await getBlogPostsByTag(decodedTag);
   } catch (err) {
     throw new Error(`Failed to load posts for tag "${tag}": ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -53,10 +48,10 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
       </Link>
 
       <h1 className="mt-6 text-3xl font-bold text-[color:var(--text)] sm:text-4xl">
-        <span className="text-[color:var(--accent)]">#{tag}</span>
+        <span className="text-[color:var(--accent)]">#{decodedTag}</span>
       </h1>
       <p className="mt-2 text-[color:var(--muted)]">
-        {posts.length} {posts.length === 1 ? "post" : "posts"} tagged with &ldquo;{tag}&rdquo;
+        {posts.length} {posts.length === 1 ? "post" : "posts"} tagged with &ldquo;{decodedTag}&rdquo;
       </p>
 
       {posts.length === 0 ? (

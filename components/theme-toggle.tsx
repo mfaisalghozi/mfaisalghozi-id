@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Theme = "light" | "dark";
 
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
-  document.body.setAttribute("data-theme", theme);
   document.documentElement.style.colorScheme = theme;
 }
 
@@ -35,13 +34,12 @@ function safeWriteTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme | null>(null);
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark"; // SSR default matches site default
     const nextTheme = safeReadTheme() ?? getSystemTheme();
-    setTheme(nextTheme);
     applyTheme(nextTheme);
-  }, []);
+    return nextTheme;
+  });
 
   function toggleTheme() {
     const nextTheme: Theme = theme === "light" ? "dark" : "light";
@@ -58,7 +56,7 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       suppressHydrationWarning
     >
-      {theme === null ? null : theme === "dark" ? "☾" : "☀"}
+      {theme === "dark" ? "☾" : "☀"}
     </button>
   );
 }

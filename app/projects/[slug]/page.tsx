@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 
 import { getProjectBySlug, getProjects } from "@/lib/projects";
+import { isSafeUrl } from "@/lib/utils";
 import BackButton from "@/components/back-button";
 import { GithubIcon, ExternalLinkIcon, CheckIcon } from "@/components/icons";
+
+export const revalidate = 1800;
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -108,11 +111,11 @@ export default async function ProjectDetailPage({
         </div>
       </section>
 
-      {(project.githubUrl || project.liveUrl) && (
+      {(isSafeUrl(project.githubUrl) || isSafeUrl(project.liveUrl)) && (
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-[color:var(--text)]">Links</h2>
           <div className="mt-4 flex flex-wrap gap-3">
-            {project.githubUrl && (
+            {isSafeUrl(project.githubUrl) && (
               <a
                 href={project.githubUrl}
                 target="_blank"
@@ -123,7 +126,7 @@ export default async function ProjectDetailPage({
                 View on GitHub
               </a>
             )}
-            {project.liveUrl && (
+            {isSafeUrl(project.liveUrl) && (
               <a
                 href={project.liveUrl}
                 target="_blank"

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { getBlogPosts, estimateReadTime } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
+import { isSafeUrl } from "@/lib/utils";
 import { DateLink } from "@/components/date-link";
 import {
   ExternalLinkIcon,
@@ -11,6 +12,8 @@ import {
   LinkedinIcon,
   MailIcon,
 } from "@/components/icons";
+
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Muhammad Faisal Ghozi | Software Engineer",
@@ -24,7 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-const personJsonLd = {
+const personJsonLdString = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Person",
   name: "Muhammad Faisal Ghozi",
@@ -33,7 +36,7 @@ const personJsonLd = {
     "https://github.com/mfaisalghozi",
     "https://linkedin.com/in/mfaisalghozi",
   ],
-};
+}).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
 
 async function RecentPosts() {
   const allPosts = await getBlogPosts();
@@ -45,7 +48,7 @@ async function RecentPosts() {
           key={post.slug}
           className="border-b border-[color:var(--line)] pb-6 last:border-0 last:pb-0"
         >
-          <Link href={`/blog/${post.slug}?from=home`}>
+          <Link href={`/blog/${post.slug}`}>
             <h3 className="font-semibold text-[color:var(--text)] transition-colors hover:text-[color:var(--accent)]">
               {post.title}
             </h3>
@@ -55,7 +58,7 @@ async function RecentPosts() {
           </p>
           <div className="mt-2 flex items-center gap-3 text-xs text-[color:var(--muted)]">
             <DateLink publishedAt={post.publishedAt} />
-            <span>~{estimateReadTime(`${post.title} ${post.summary}`, 5)}</span>
+            <span>~{estimateReadTime(post.summary)}</span>
           </div>
         </article>
       ))}
@@ -90,14 +93,14 @@ async function FeaturedProjects() {
           className="group relative rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4 transition-colors hover:border-[color:var(--accent)]"
         >
           <Link
-            href={`/projects/${project.slug}?from=home`}
+            href={`/projects/${project.slug}`}
             className="absolute inset-0 z-0 rounded-xl"
             aria-label={project.name}
           />
           <div className="relative z-10 flex items-start justify-between">
             <h3 className="text-sm font-semibold text-[color:var(--text)] transition-colors group-hover:text-[color:var(--accent)]">{project.name}</h3>
             <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[color:var(--muted)]">
-              {project.liveUrl && (
+              {isSafeUrl(project.liveUrl) && (
                 <a
                   href={project.liveUrl}
                   target="_blank"
@@ -131,7 +134,7 @@ async function FeaturedProjects() {
 function FeaturedProjectsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
           className="rounded-xl border border-[color:var(--line)] bg-[color:var(--card)] p-4"
@@ -154,7 +157,7 @@ export default function HomePage() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: personJsonLdString }}
       />
       {/* Hero */}
       <section className="mb-10 sm:mb-16">

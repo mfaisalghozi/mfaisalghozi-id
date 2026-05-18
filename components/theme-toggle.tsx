@@ -34,8 +34,8 @@ function safeWriteTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark"; // SSR default matches site default
     const nextTheme = safeReadTheme() ?? getSystemTheme();
     applyTheme(nextTheme);
     return nextTheme;
@@ -56,7 +56,7 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       suppressHydrationWarning
     >
-      {theme === null ? null : theme === "dark" ? "☾" : "☀"}
+      {theme === "dark" ? "☾" : "☀"}
     </button>
   );
 }

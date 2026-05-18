@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+// CSP is set dynamically per-request in middleware.ts (nonce-based).
+// Only static, non-nonce headers live here.
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -11,18 +13,6 @@ const securityHeaders = [
   {
     key: "Strict-Transport-Security",
     value: "max-age=31536000; includeSubDomains; preload",
-  },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'sha256-jC+NRObbc9lg27Hu8DFrENYhKcq92JY6hwjoUe0dUjE='",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' https://prod-files-secure.s3.us-east-1.amazonaws.com https://images.notion.so https://www.notion.so https://notion.so data: blob:",
-      "connect-src 'self' https://api.notion.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
-      "frame-ancestors 'none'",
-    ].join("; "),
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-site" },

@@ -164,8 +164,8 @@ export const getProjects = cache(async function getProjects(): Promise<import(".
   try {
     const notionProjects = await getProjectsFromNotion();
     return notionProjects ?? STATIC_PROJECTS;
-  } catch (err) {
-    throw new Error(`Failed to load projects: ${err instanceof Error ? err.message : String(err)}`);
+  } catch {
+    return STATIC_PROJECTS;
   }
 });
 

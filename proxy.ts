@@ -10,7 +10,9 @@ export function proxy(request: NextRequest) {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' https://prod-files-secure.s3.us-east-1.amazonaws.com https://images.notion.so https://www.notion.so https://notion.so data: blob:",
-    "connect-src 'self' https://api.notion.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    // api.notion.com is called server-side only; omit it here to reduce client attack surface
+    "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    "worker-src 'self'",
     "frame-src https://vercel.live",
     "frame-ancestors 'none'",
   ].join("; ");

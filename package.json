@@ -26,6 +26,14 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
+  "pnpm": {
+    "overrides": {
+      "flatted": ">=3.4.2",
+      "micromatch>picomatch": ">=4.0.4",
+      "tinyglobby>picomatch": ">=4.0.4",
+      "postcss": ">=8.5.10"
+    }
+  },
   "volta": {
     "node": "24.9.0"
   }

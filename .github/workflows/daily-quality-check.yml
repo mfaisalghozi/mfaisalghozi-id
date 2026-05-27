@@ -42,9 +42,10 @@ jobs:
       - name: Check for hardcoded secrets patterns
         run: |
           echo "### Hardcoded secret patterns" >> $GITHUB_STEP_SUMMARY
-          # Look for common patterns like bare API keys or tokens in source files
+          # Look for common patterns like bare API keys or tokens in source files.
+          # sk- requires ≥20 trailing alphanum chars to avoid matching e.g. "task-manager" slugs.
           if grep -rn --include="*.ts" --include="*.tsx" \
-            -E "(notion_secret_|secret_|sk-|Bearer [a-zA-Z0-9]{20,})" \
+            -E "(notion_secret_[A-Za-z0-9]+|sk-[A-Za-z0-9]{20,}|Bearer [a-zA-Z0-9]{20,})" \
             app/ lib/ components/ 2>/dev/null \
             | grep -v "process\.env" | grep -v "//"; then
             echo "WARNING: Possible hardcoded credentials found above." >> $GITHUB_STEP_SUMMARY
@@ -74,7 +75,17 @@ jobs:
       - name: Check for missing rel=noopener on target=_blank links
         run: |
           echo "### target=_blank without rel=noopener noreferrer" >> $GITHUB_STEP_SUMMARY
-          if grep -rn 'target="_blank"' app/ components/ 2>/dev/null | grep -v "noopener"; then
+          # JSX spreads target and rel across multiple lines, so we check 5 surrounding
+          # lines around every target="_blank" occurrence rather than the same line only.
+          FOUND=0
+          while IFS=: read -r file lineno _rest; do
+            ctx=$(sed -n "$((lineno > 3 ? lineno - 3 : 1)),$((lineno + 5))p" "$file")
+            if ! echo "$ctx" | grep -q "noopener"; then
+              echo "MISSING noopener: $file:$lineno" >> $GITHUB_STEP_SUMMARY
+              FOUND=1
+            fi
+          done < <(grep -rn 'target="_blank"' app/ components/ 2>/dev/null)
+          if [ "$FOUND" -eq 1 ]; then
             echo "WARNING: Found target=_blank links without noopener above." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
@@ -84,7 +95,17 @@ jobs:
       - name: Check for unvalidated external URLs used as href
         run: |
           echo "### Unvalidated external URL hrefs" >> $GITHUB_STEP_SUMMARY
-          if grep -rn 'href={[^}]*Url}' app/ components/ 2>/dev/null | grep -v "isSafeUrl"; then
+          # The isSafeUrl guard wraps the anchor element in a JSX conditional, so it appears
+          # several lines above the href={} attribute — check 10 lines of surrounding context.
+          FOUND=0
+          while IFS=: read -r file lineno _rest; do
+            ctx=$(sed -n "$((lineno > 10 ? lineno - 10 : 1)),$((lineno + 2))p" "$file")
+            if ! echo "$ctx" | grep -q "isSafeUrl"; then
+              echo "MISSING isSafeUrl guard: $file:$lineno" >> $GITHUB_STEP_SUMMARY
+              FOUND=1
+            fi
+          done < <(grep -rn 'href={[^}]*Url}' app/ components/ 2>/dev/null)
+          if [ "$FOUND" -eq 1 ]; then
             echo "WARNING: Found potentially unvalidated URL hrefs above." >> $GITHUB_STEP_SUMMARY
             exit 1
           else

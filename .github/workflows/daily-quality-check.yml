@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: pnpm
 
       - name: Install dependencies
@@ -92,6 +92,22 @@ jobs:
             echo "All _blank links have noopener noreferrer — good." >> $GITHUB_STEP_SUMMARY
           fi
 
+      - name: Check all required env vars are documented in .env.example
+        run: |
+          echo "### .env.example coverage" >> $GITHUB_STEP_SUMMARY
+          MISSING=0
+          for var in NOTION_API_KEY NOTION_DATABASE_ID NOTION_PROJECTS_DATABASE_ID REVALIDATE_SECRET; do
+            if ! grep -q "^$var=" .env.example 2>/dev/null; then
+              echo "MISSING: $var not documented in .env.example" >> $GITHUB_STEP_SUMMARY
+              MISSING=1
+            fi
+          done
+          if [ "$MISSING" -eq 0 ]; then
+            echo "All required env vars documented in .env.example — good." >> $GITHUB_STEP_SUMMARY
+          else
+            exit 1
+          fi
+
       - name: Check for unvalidated external URLs used as href
         run: |
           echo "### Unvalidated external URL hrefs" >> $GITHUB_STEP_SUMMARY
@@ -125,7 +141,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: pnpm
 
       - name: Install dependencies
@@ -224,6 +240,22 @@ jobs:
             echo "personJsonLd is pre-serialized at module level — good." >> $GITHUB_STEP_SUMMARY
           fi
 
+      - name: Check for unreferenced default Next.js starter assets in public/
+        run: |
+          echo "### Default Next.js starter files in public/" >> $GITHUB_STEP_SUMMARY
+          STARTERS="public/next.svg public/vercel.svg public/window.svg public/file.svg public/globe.svg"
+          FOUND=0
+          for f in $STARTERS; do
+            if [ -f "$f" ]; then
+              name=$(basename "$f")
+              if ! grep -rq "$name" app/ components/ 2>/dev/null; then
+                echo "NOTE: $f exists but is not referenced — consider removing." >> $GITHUB_STEP_SUMMARY
+                FOUND=1
+              fi
+            fi
+          done
+          [ "$FOUND" -eq 0 ] && echo "No unreferenced starter assets found — good." >> $GITHUB_STEP_SUMMARY || true
+
   # ── 4. Dependency freshness ───────────────────────────────────────────────────
   deps:
     name: Dependency Freshness
@@ -237,7 +269,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: pnpm
 
       - name: Install dependencies
@@ -246,7 +278,20 @@ jobs:
       - name: Check for outdated packages
         run: |
           echo "### Outdated packages" >> $GITHUB_STEP_SUMMARY
-          pnpm outdated 2>&1 >> $GITHUB_STEP_SUMMARY || true
+          pnpm outdated 2>&1 | tee /tmp/outdated.txt >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          # Flag major version bumps (current major != latest major) for manual review
+          MAJOR_BUMPS=$(grep -E '^\S' /tmp/outdated.txt | awk '{print $1, $2, $3}' | while read pkg cur lat; do
+            cur_major=$(echo "$cur" | cut -d. -f1)
+            lat_major=$(echo "$lat" | cut -d. -f1)
+            if [ -n "$cur_major" ] && [ -n "$lat_major" ] && [ "$cur_major" != "$lat_major" ]; then
+              echo "  - $pkg: $cur → $lat"
+            fi
+          done)
+          if [ -n "$MAJOR_BUMPS" ]; then
+            echo "#### Major version bumps (review before updating):" >> $GITHUB_STEP_SUMMARY
+            echo "$MAJOR_BUMPS" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # ── 5. Live site checks ───────────────────────────────────────────────────────
   live-checks:
@@ -279,10 +324,9 @@ jobs:
           echo "### PageSpeed Insights (mobile)" >> $GITHUB_STEP_SUMMARY
           RESULT=$(curl -s --max-time 60 \
             "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://mfaisalghozi.id&strategy=mobile" 2>/dev/null) || { echo "PageSpeed API unreachable." >> $GITHUB_STEP_SUMMARY; exit 0; }
-          PERF=$(echo "$RESULT" | grep -o '"score":[0-9.]*' | head -1 | grep -o '[0-9.]*')
+          PERF_SCORE=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['performance']['score'])" 2>/dev/null || echo "n/a")
           A11Y=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['accessibility']['score'])" 2>/dev/null || echo "n/a")
           SEO=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['seo']['score'])" 2>/dev/null || echo "n/a")
-          PERF_SCORE=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['lighthouseResult']['categories']['performance']['score'])" 2>/dev/null || echo "n/a")
           echo "| Metric | Score |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Performance | $PERF_SCORE |" >> $GITHUB_STEP_SUMMARY

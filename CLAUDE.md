@@ -16,8 +16,9 @@ Environment variables are required for Notion integration. Copy `.env.example` t
 - `NOTION_API_KEY` — Notion internal integration secret
 - `NOTION_DATABASE_ID` — ID of the blog Notion database
 - `NOTION_PROJECTS_DATABASE_ID` — ID of the projects Notion database
+- `REVALIDATE_SECRET` — Secret token for the `/api/revalidate` ISR webhook endpoint (set in Vercel env vars and your Notion automation; generate with `openssl rand -hex 32`)
 
-Without these, the blog falls back to hardcoded sample posts/blocks in `lib/notion.ts`, and projects fall back to the static array in `lib/projects.ts`.
+Without the Notion keys, the blog falls back to hardcoded sample posts/blocks in `lib/notion.ts`, and projects fall back to the static array in `lib/projects.ts`.
 
 ## Architecture
 

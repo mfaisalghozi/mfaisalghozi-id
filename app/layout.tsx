@@ -54,12 +54,8 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
-        {/* Upgrade to preconnect for Notion image origins — establishes DNS + TCP + TLS
-            early so the first Notion image (often LCP) can start loading immediately. */}
-        <link rel="preconnect" href="https://images.notion.so" />
+        <link rel="preconnect" href="https://images.notion.so" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://prod-files-secure.s3.us-east-1.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://images.notion.so" />
-        <link rel="dns-prefetch" href="https://prod-files-secure.s3.us-east-1.amazonaws.com" />
       </head>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <script

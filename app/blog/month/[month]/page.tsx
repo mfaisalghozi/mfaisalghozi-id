@@ -16,6 +16,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ month: string }> }) {
   const { month } = await params;
+  if (!/^\d{4}-\d{2}$/.test(month)) return {};
   const monthLabel = formatMonth(`${month}-01`);
   return {
     title: `${monthLabel} | mfaisalghozi Blog`,

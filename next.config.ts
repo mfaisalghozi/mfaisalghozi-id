@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       // Notion file attachments — scoped to Notion's dedicated S3 bucket
       { protocol: "https", hostname: "prod-files-secure.s3.us-east-1.amazonaws.com", pathname: "/**" },

@@ -858,7 +858,7 @@ async function fetchBlocksRecursively(blockId: string, apiKey: string, depth = 0
   return blocks;
 }
 
-export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
+export const getPostBlocks = cache(async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
   const notionApiKey = process.env.NOTION_API_KEY;
 
   if (!notionApiKey) {
@@ -866,4 +866,4 @@ export async function getPostBlocks(postId: string): Promise<NotionBlock[]> {
   }
 
   return fetchBlocksRecursively(postId, notionApiKey);
-}
+});

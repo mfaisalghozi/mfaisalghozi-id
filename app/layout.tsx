@@ -51,8 +51,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* next/font self-hosts Google Fonts in production — no preconnect needed */}
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
         <link rel="preconnect" href="https://images.notion.so" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://prod-files-secure.s3.us-east-1.amazonaws.com" crossOrigin="anonymous" />

@@ -37,7 +37,9 @@ export default function GlobalError({
             A critical error occurred
           </h1>
           <p style={{ marginTop: "1rem", color: "#94a3b8", fontSize: "0.875rem" }}>
-            {error.message || "An unexpected error occurred. Please try again."}
+            {process.env.NODE_ENV === "development"
+              ? (error.message || "An unexpected error occurred. Please try again.")
+              : "An unexpected error occurred. Please try again."}
           </p>
           <button
             onClick={reset}

@@ -5,7 +5,8 @@ When you publish or update a blog post in Notion, this webhook instantly clears 
 
 ## Revalidate Endpoint
 ```
-POST https://mfaisalghozi.id/api/revalidate?secret=<REVALIDATE_SECRET>
+POST https://mfaisalghozi.id/api/revalidate
+Authorization: Bearer <REVALIDATE_SECRET>
 ```
 
 The secret is stored in `.env.local` and must also be set in Vercel environment variables.
@@ -38,8 +39,9 @@ Set up two triggers (or one automation each):
 1. Click **"+ Add action"**
 2. Choose **"Send webhook"**
 3. Configure:
-   - **URL:** `https://mfaisalghozi.id/api/revalidate?secret=8e4eb07a422f063a4edc2ab230c096e1c421a3f82a225022e49723148ade53a1`
+   - **URL:** `https://mfaisalghozi.id/api/revalidate`
    - **Method:** POST
+   - **Headers:** `Authorization: Bearer <YOUR_REVALIDATE_SECRET>`
 4. Click **Save**
 
 ---
@@ -48,7 +50,8 @@ Set up two triggers (or one automation each):
 
 After deploying to production, trigger the webhook manually via terminal:
 ```bash
-curl -X POST "https://mfaisalghozi.id/api/revalidate?secret=8e4eb07a422f063a4edc2ab230c096e1c421a3f82a225022e49723148ade53a1"
+curl -X POST "https://mfaisalghozi.id/api/revalidate" \
+  -H "Authorization: Bearer <YOUR_REVALIDATE_SECRET>"
 ```
 
 Expected response:

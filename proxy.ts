@@ -7,8 +7,8 @@ export function proxy(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
     "img-src 'self' https://prod-files-secure.s3.us-east-1.amazonaws.com https://images.notion.so https://www.notion.so https://notion.so blob:",
     // api.notion.com is called server-side only; omit it here to reduce client attack surface
     "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",

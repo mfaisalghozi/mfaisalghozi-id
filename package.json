@@ -31,7 +31,8 @@
       "flatted": ">=3.4.2",
       "micromatch>picomatch": ">=4.0.4",
       "tinyglobby>picomatch": ">=4.0.4",
-      "postcss": ">=8.5.10"
+      "postcss": ">=8.5.10",
+      "js-yaml": ">=4.2.0"
     }
   },
   "volta": {

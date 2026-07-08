@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Notion webhook verification challenge
-  if (body?.challenge) {
+  if (typeof body?.challenge === "string") {
     return NextResponse.json({ challenge: body.challenge });
   }
 

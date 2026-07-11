@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { getBlogPosts, estimateReadTime } from "@/lib/notion";
+import { getBlogPosts } from "@/lib/notion";
 import { getProjects } from "@/lib/projects";
 import { isSafeUrl } from "@/lib/utils";
 import { DateLink } from "@/components/date-link";
@@ -58,7 +58,7 @@ async function RecentPosts() {
           </p>
           <div className="mt-2 flex items-center gap-3 text-xs text-[color:var(--muted)]">
             <DateLink publishedAt={post.publishedAt} />
-            <span>~{estimateReadTime(post.summary)}</span>
+            <span>~{post.readTime}</span>
           </div>
         </article>
       ))}

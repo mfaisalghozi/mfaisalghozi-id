@@ -16,9 +16,13 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
+  const decodedTag = decodeURIComponent(tag);
+  if (decodedTag.length > 50 || !/^[\w\s\-.]+$/.test(decodedTag)) {
+    return {};
+  }
   return {
-    title: `#${tag} | mfaisalghozi Blog`,
-    description: `Blog posts tagged with "${tag}".`,
+    title: `#${decodedTag} | mfaisalghozi Blog`,
+    description: `Blog posts tagged with "${decodedTag}".`,
   };
 }
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import {
   estimateReadTime,
@@ -367,7 +368,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026") }}
       />
-      <BackButton />
+      <Suspense fallback={<div className="h-6 w-32" />}>
+        <BackButton />
+      </Suspense>
 
       <h1 className="mt-8 text-3xl font-bold leading-tight text-[color:var(--text)] sm:text-4xl">
         {post.title}

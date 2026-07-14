@@ -1,13 +1,13 @@
 import { ImageResponse } from "next/og";
-import { readFileSync } from "fs";
+import { readFile } from "fs/promises";
 import { join } from "path";
 
 export const alt = "mfaisalghozi";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OgImage() {
-  const iconData = readFileSync(join(process.cwd(), "app/icon.png"));
+export default async function OgImage() {
+  const iconData = await readFile(join(process.cwd(), "app/icon.png"));
   const iconSrc = `data:image/png;base64,${iconData.toString("base64")}`;
 
   return new ImageResponse(

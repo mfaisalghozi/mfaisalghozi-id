@@ -47,7 +47,7 @@ jobs:
           if grep -rn --include="*.ts" --include="*.tsx" \
             -E "(notion_secret_[A-Za-z0-9]+|sk-[A-Za-z0-9]{20,}|Bearer [a-zA-Z0-9]{20,})" \
             app/ lib/ components/ 2>/dev/null \
-            | grep -v "process\.env" | grep -v "//"; then
+            | grep -v "process\.env" | grep -v '^\s*//'; then
             echo "WARNING: Possible hardcoded credentials found above." >> $GITHUB_STEP_SUMMARY
           else
             echo "No hardcoded credential patterns detected." >> $GITHUB_STEP_SUMMARY

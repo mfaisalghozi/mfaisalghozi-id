@@ -164,7 +164,8 @@ export const getProjects = cache(async function getProjects(): Promise<import(".
   try {
     const notionProjects = await getProjectsFromNotion();
     return notionProjects ?? STATIC_PROJECTS;
-  } catch {
+  } catch (err) {
+    console.error("[projects] Notion fetch failed, falling back to static data:", err);
     return STATIC_PROJECTS;
   }
 });

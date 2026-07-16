@@ -112,6 +112,8 @@ type NotionQueryResponse = {
 
 type NotionBlocksResponse = {
   results: NotionBlock[];
+  has_more: boolean;
+  next_cursor: string | null;
 };
 
 function readRichText(value: NotionRichText[] | undefined): string {
@@ -822,40 +824,51 @@ export const getProjectsFromNotion = cache(async function getProjectsFromNotion(
 async function fetchBlocksRecursively(blockId: string, apiKey: string, depth = 0): Promise<NotionBlock[]> {
   if (depth >= MAX_BLOCK_DEPTH) return [];
 
-  let response: Response;
-  try {
-    response = await fetchWithTimeout(`https://api.notion.com/v1/blocks/${blockId}/children`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Notion-Version": NOTION_VERSION,
-      },
-      next: { revalidate: 1800 },
-    });
-  } catch (err) {
-    throw new Error(`Failed to connect to Notion blocks API: ${err instanceof Error ? err.message : String(err)}`);
-  }
+  const all: NotionBlock[] = [];
+  let cursor: string | null = null;
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Notion blocks: ${response.status}`);
-  }
+  do {
+    const url = new URL(`https://api.notion.com/v1/blocks/${blockId}/children`);
+    url.searchParams.set("page_size", "100");
+    if (cursor) url.searchParams.set("start_cursor", cursor);
 
-  let payload: NotionBlocksResponse;
-  try {
-    payload = (await response.json()) as NotionBlocksResponse;
-  } catch {
-    throw new Error("Failed to parse Notion blocks response");
-  }
-  const blocks = payload.results;
+    let response: Response;
+    try {
+      response = await fetchWithTimeout(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Notion-Version": NOTION_VERSION,
+        },
+        next: { revalidate: 1800 },
+      });
+    } catch (err) {
+      throw new Error(`Failed to connect to Notion blocks API: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Notion blocks: ${response.status}`);
+    }
+
+    let payload: NotionBlocksResponse;
+    try {
+      payload = (await response.json()) as NotionBlocksResponse;
+    } catch {
+      throw new Error("Failed to parse Notion blocks response");
+    }
+
+    all.push(...payload.results);
+    cursor = payload.has_more ? payload.next_cursor : null;
+  } while (cursor !== null);
 
   await Promise.all(
-    blocks
+    all
       .filter((b) => b.has_children)
       .map(async (b) => {
         b.children = await fetchBlocksRecursively(b.id, apiKey, depth + 1);
       }),
   );
 
-  return blocks;
+  return all;
 }
 
 export const getPostBlocks = cache(async function getPostBlocks(postId: string): Promise<NotionBlock[]> {

@@ -13,6 +13,7 @@ export const metadata = {
     description: "Selected product and engineering projects.",
     url: "https://mfaisalghozi.id/projects",
     siteName: "mfaisalghozi",
+    locale: "en_US",
     type: "website",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
   },

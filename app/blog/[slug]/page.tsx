@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: post.publishedAt,
       authors: ["Muhammad Faisal Ghozi"],
       siteName: "mfaisalghozi",
+      locale: "en_US",
       images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
     },
     twitter: {
@@ -362,11 +363,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     },
   };
 
+  const jsonLdString = JSON.stringify(jsonLd)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+
   return (
     <article className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026") }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString }}
       />
       <Suspense fallback={<div className="h-6 w-32" />}>
         <BackButton />

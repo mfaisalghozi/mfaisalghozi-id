@@ -17,6 +17,7 @@ export const metadata = {
     description: BLOG_DESCRIPTION,
     url: "https://mfaisalghozi.id/blog",
     siteName: "mfaisalghozi",
+    locale: "en_US",
     type: "website",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
   },

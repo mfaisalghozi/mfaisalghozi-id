@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -21,6 +21,15 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1118" },
+  ],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://mfaisalghozi.id"),
   title: "mfaisalghozi",
@@ -30,6 +39,7 @@ export const metadata: Metadata = {
     description: "A software engineer's corner on the internet — exploring life, ideas, and projects built along the way. Written by Ghozi, driven by curiosity.",
     url: "https://mfaisalghozi.id",
     siteName: "mfaisalghozi",
+    locale: "en_US",
     type: "website",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "mfaisalghozi" }],
   },
@@ -53,8 +63,6 @@ export default async function RootLayout({
       <head>
         {/* next/font self-hosts Google Fonts in production — no preconnect needed */}
         <link rel="preconnect" href="https://vitals.vercel-insights.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://images.notion.so" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://prod-files-secure.s3.us-east-1.amazonaws.com" crossOrigin="anonymous" />
       </head>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <script

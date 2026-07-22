@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 export const runtime = "nodejs";
+export const revalidate = false;
 
 export const alt = "mfaisalghozi";
 export const size = { width: 1200, height: 630 };
